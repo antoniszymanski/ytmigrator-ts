@@ -25,7 +25,6 @@ import type { Exporter, Importer } from "./remotes"
 import { File } from "./remotes/file"
 import { FreeTube } from "./remotes/freetube"
 import { PipePipe } from "./remotes/pipepipe"
-import { Tubular } from "./remotes/tubular"
 import { YouTube } from "./remotes/youtube"
 import { UnreachableCaseError } from "./utils"
 import { Youtubei } from "./Youtubei"
@@ -65,14 +64,6 @@ const REMOTES = <const>{
   },
   pipepipe: {
     remote: PipePipe,
-    options: (type: RemoteType) => {
-      return object(`${type} Options`, {
-        path: option("--path", path({ extensions: [".zip"], mustExist: true, type: "file" })),
-      })
-    },
-  },
-  tubular: {
-    remote: Tubular,
     options: (type: RemoteType) => {
       return object(`${type} Options`, {
         path: option("--path", path({ extensions: [".zip"], mustExist: true, type: "file" })),
@@ -201,11 +192,6 @@ async function createRemote<T>(name: RemoteName, options: unknown, youtubei: You
     case "pipepipe": {
       const { path } = options as Options<typeof name>
       instance = await REMOTES[name].remote.create(path, youtubei)
-      break
-    }
-    case "tubular": {
-      const { path } = options as Options<typeof name>
-      instance = await CONFIG[name].remote.create(path, youtubei)
       break
     }
     case "youtube": {
