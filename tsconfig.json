@@ -1,0 +1,9 @@
+{
+  "extends": ["@tsconfig/bun/tsconfig.json", "@tsconfig/strictest/tsconfig.json"],
+  "compilerOptions": {
+    "types": ["bun"],
+    "exactOptionalPropertyTypes": false,
+    "noImplicitReturns": false,
+    "plugins": [{ "transform": "typia/lib/transform" }]
+  }
+}

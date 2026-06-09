@@ -1,0 +1,27 @@
+name: biome
+
+on:
+  pull_request:
+    branches: ["*"]
+  push:
+    branches: ["*"]
+    tags-ignore: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  biome:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Set up Biome
+        uses: biomejs/setup-biome@v2
+
+      - name: Run Biome
+        run: biome ci .

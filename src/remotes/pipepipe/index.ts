@@ -1,0 +1,323 @@
+// SPDX-FileCopyrightText: 2026 Antoni Szymański
+// SPDX-License-Identifier: MPL-2.0
+
+import { constants, Database } from "bun:sqlite"
+import { mkdtemp, rm } from "node:fs/promises"
+import { tmpdir } from "node:os"
+import typia from "typia"
+import { LiveVideo } from "youtubei"
+import * as zip from "zip-lib"
+import { getVideoAuthor, type Youtubei } from "../../Youtubei"
+import type { Playlists, Subscriptions, UserData } from ".."
+import { compactMap, diffPlaylists, diffSubscriptions } from "../utils"
+
+export class PipePipe {
+  private constructor(
+    private readonly archivePath: string,
+    private readonly tmpdirPath: string,
+    private readonly db: Database,
+    private readonly youtubei: Youtubei,
+  ) {}
+
+  static async create(archivePath: string, youtubei: Youtubei) {
+    const tmpdirPath = await mkdtemp(`${tmpdir()}/`)
+    await zip.extract(archivePath, tmpdirPath, {
+      onEntry(event) {
+        if (event.entryName !== "newpipe.db" && event.entryName !== "newpipe.settings") {
+          event.preventDefault()
+        }
+      },
+    })
+    const dbPath = `${tmpdirPath}/newpipe.db`
+    const db = new Database(dbPath, { strict: true })
+    db.run("PRAGMA journal_mode = WAL")
+    return new this(archivePath, tmpdirPath, db, youtubei)
+  }
+
+  async close() {
+    this.db.fileControl(constants.SQLITE_FCNTL_PERSIST_WAL, 0) // Disable persistent WAL (needed on macOS)
+    this.db.run("PRAGMA wal_checkpoint(TRUNCATE)") // Checkpoint and truncate the WAL file
+    this.db.close(true)
+    await zip.archiveFolder(this.tmpdirPath, this.archivePath, { compressionLevel: 9 })
+    await rm(this.tmpdirPath, { recursive: true, force: true })
+  }
+
+  async import(data: UserData) {
+    await Promise.all([
+      this.importSubscriptions(data.subscriptions), //
+      this.importPlaylists(data.playlists),
+    ])
+  }
+
+  private async importSubscriptions(subscriptions: Subscriptions) {
+    const deleteSubscription = (channelId: string) => {
+      this.db.query("DELETE FROM subscriptions WHERE url = ?").run(channelUrl(channelId))
+    }
+    const createSubscription = async (channelId: string) => {
+      const channel = await this.youtubei.getChannel(channelId)
+      if (!channel) {
+        console.warn(`Failed to get information about the channel with ID ${channelId}`)
+        return
+      }
+      this.db
+        .query(
+          "INSERT INTO subscriptions (service_id, url, name, avatar_url, description, notification_mode) VALUES (0, ?, ?, ?, ?, 0)",
+        )
+        .run(channel.url, channel.name, channel.thumbnails?.best ?? null, channel.description ?? null)
+    }
+    const differences = diffSubscriptions(this.exportSubscriptions(), subscriptions)
+    for (const difference of differences) {
+      switch (true) {
+        case typia.is<{ type: "REMOVE"; path: [string] }>(difference):
+          deleteSubscription(difference.path[0])
+          break
+        case typia.is<{ type: "CREATE"; path: [string] }>(difference):
+          await createSubscription(difference.path[0])
+          break
+        default:
+          throw new Error("unreachable")
+      }
+    }
+  }
+
+  private async importPlaylists(playlists: Playlists) {
+    const state = this.exportRawPlaylists()
+    const deletePlaylist = (name: string) => {
+      this.deletePlaylist(name)
+      delete state[name]
+    }
+    const createPlaylist = async (name: string, videoIds: string[]) => {
+      const videos = await compactMap(videoIds, async videoId => {
+        const streamRowId = await this.insertStream(videoId)
+        if (streamRowId) {
+          return { videoId, streamRowId }
+        }
+      })
+      if (!videos[0]) {
+        throw new Error("TODO")
+      }
+      const firstVideo = await this.youtubei.getVideo(videos[0].videoId)
+      const playlistRowId = this.insertPlaylist(name, firstVideo?.thumbnails.best ?? null)
+      for (const [index, video] of videos.entries()) {
+        this.insertPlaylistStreamJoin(playlistRowId, video.streamRowId, index)
+      }
+      state[name] = { videos, playlistRowId }
+    }
+    const deleteVideo = (playlistName: string, index: number) => {
+      const videoIds = state[playlistName]?.videos
+      if (!videoIds) {
+        throw new Error("TODO")
+      }
+      const videoId = videoIds[index]?.videoId
+      if (!videoId) {
+        throw new Error("TODO")
+      }
+      this.deleteStream(videoId)
+      videoIds.splice(index, 1)
+    }
+    const createVideo = async (playlistName: string, index: number, id: string) => {
+      const streamRowId = await this.insertStream(id)
+      if (!streamRowId) {
+        return
+      }
+      const rawPlaylists = state[playlistName]
+      if (!rawPlaylists) {
+        throw new Error("TODO")
+      }
+      this.insertPlaylistStreamJoin(rawPlaylists.playlistRowId, streamRowId, index)
+      rawPlaylists.videos[index] = { videoId: id, streamRowId }
+    }
+    const updateVideo = async (playlistName: string, index: number, id: string) => {
+      const streamRowId = await this.insertStream(id)
+      if (!streamRowId) {
+        return
+      }
+      const rawPlaylists = state[playlistName]
+      if (!rawPlaylists) {
+        throw new Error("TODO")
+      }
+      this.updatePlaylistStreamJoin(rawPlaylists.playlistRowId, streamRowId, index)
+      rawPlaylists.videos[index] = { videoId: id, streamRowId }
+    }
+    const differences = diffPlaylists(simplifyPlaylists(state), playlists)
+    for (const difference of differences) {
+      switch (true) {
+        case typia.is<{ type: "REMOVE"; path: [string] }>(difference):
+          deletePlaylist(difference.path[0])
+          break
+        case typia.is<{ type: "CREATE"; path: [string]; value: string[] }>(difference):
+          await createPlaylist(difference.path[0], difference.value)
+          break
+        case typia.is<{ type: "REMOVE"; path: [string, number] }>(difference):
+          deleteVideo(difference.path[0], difference.path[1])
+          break
+        case typia.is<{ type: "CREATE"; path: [string, number]; value: string }>(difference):
+          await createVideo(difference.path[0], difference.path[1], difference.value)
+          break
+        case typia.is<{ type: "CHANGE"; path: [string, number]; value: string }>(difference):
+          await updateVideo(difference.path[0], difference.path[1], difference.value)
+          break
+        default:
+          throw new Error("unreachable")
+      }
+    }
+  }
+
+  private async insertStream(videoId: string) {
+    const existingId = this.getStreamByVideoId(videoId)
+    if (existingId) {
+      return existingId
+    }
+    const video = await this.youtubei.getVideo(videoId)
+    if (!video) {
+      console.warn(`Failed to get information about the video with ID ${videoId}`)
+      return
+    } else if (video instanceof LiveVideo) {
+      console.warn(`The video with ID ${videoId} is currently live`)
+      return
+    }
+    const channel = getVideoAuthor(video)
+    if (!channel) {
+      return
+    }
+    const id = this.db
+      .query(
+        'INSERT INTO streams (service_id, url, title, stream_type, duration, uploader, uploader_url, thumbnail_url, view_count, is_paid) VALUES (0, $url, $title, "VIDEO_STREAM", $duration, $uploader, $uploaderUrl, $thumbnailUrl, $viewCount, 0)',
+      )
+      .run({
+        url: videoUrl(videoId),
+        title: video.title,
+        duration: video.duration,
+        uploader: channel.name,
+        uploaderUrl: channel.url,
+        thumbnailUrl: video.thumbnails.best ?? null,
+        viewCount: video.viewCount,
+      }).lastInsertRowid
+    typia.assertGuard<number>(id)
+    return id
+  }
+
+  private getStreamByVideoId(videoId: string) {
+    const row = this.db.query("SELECT uid FROM streams WHERE service_id = 0 AND url = ?").get(videoUrl(videoId))
+    typia.assertGuard<{ uid?: number } | null>(row)
+    return row?.uid
+  }
+
+  private deletePlaylist(name: string) {
+    this.db.query("DELETE FROM playlists WHERE name = ?").run(name)
+  }
+
+  private insertPlaylist(name: string, thumbnailUrl: string | null) {
+    const id = this.db
+      .query("INSERT INTO playlists (name, thumbnail_url, display_index) VALUES (?, ?, -1)")
+      .run(name, thumbnailUrl).lastInsertRowid
+    typia.assertGuard<number>(id)
+    return id
+  }
+
+  private insertPlaylistStreamJoin(playlistRowId: number, streamRowId: number, joinIndex: number) {
+    this.db
+      .query("INSERT INTO playlist_stream_join (playlist_id, stream_id, join_index) VALUES (?, ?, ?)")
+      .run(playlistRowId, streamRowId, joinIndex)
+  }
+
+  private deleteStream(videoId: string) {
+    this.db.query("DELETE FROM streams WHERE url = ?").run(videoUrl(videoId))
+  }
+
+  private updatePlaylistStreamJoin(playlistRowId: number, streamRowId: number, joinIndex: number) {
+    this.db
+      .query("UPDATE playlist_stream_join SET stream_id = ? WHERE playlist_id = ? AND join_index = ?")
+      .run(streamRowId, playlistRowId, joinIndex)
+  }
+
+  export(): UserData {
+    return {
+      subscriptions: this.exportSubscriptions(),
+      playlists: this.exportPlaylists(),
+    }
+  }
+
+  private exportSubscriptions(): Subscriptions {
+    return this.db
+      .query("SELECT url FROM subscriptions")
+      .all()
+      .map(row => {
+        typia.assertGuard<{ url: string }>(row)
+        return channelId(row.url)
+      })
+  }
+
+  private exportPlaylists() {
+    const rawPlaylists = this.exportRawPlaylists()
+    return simplifyPlaylists(rawPlaylists)
+  }
+
+  private exportRawPlaylists() {
+    const rawPlaylists: RawPlaylists = {}
+    for (const playlist of this.db.query("SELECT uid, name FROM playlists")) {
+      typia.assertGuard<{ uid: number; name: string }>(playlist)
+      const videos = this.db
+        .query("SELECT stream_id FROM playlist_stream_join WHERE playlist_id = ? ORDER BY join_index")
+        .all(playlist.uid)
+        .map(row => {
+          typia.assertGuard<{ stream_id: number }>(row)
+          return row.stream_id
+        })
+        .map(uid => {
+          const row = this.db.query("SELECT url FROM streams WHERE uid = ?").get(uid)
+          typia.assertGuard<{ url: string }>(row)
+          return {
+            videoId: videoId(row.url),
+            streamRowId: uid,
+          }
+        })
+      rawPlaylists[playlist.name] = {
+        videos,
+        playlistRowId: playlist.uid,
+      }
+    }
+    return rawPlaylists
+  }
+}
+
+const channelUrl = (channelId: string) => `https://www.youtube.com/channel/${channelId}`
+
+function channelId(channelUrl: string) {
+  const prefix = "https://www.youtube.com/channel/"
+  if (!channelUrl.startsWith(prefix)) {
+    throw new Error("TODO")
+  }
+  return channelUrl.slice(prefix.length)
+}
+
+const videoUrl = (videoId: string) => `https://www.youtube.com/watch?v=${videoId}`
+
+function videoId(videoUrl: string) {
+  const prefix = "https://www.youtube.com/watch?v="
+  if (!videoUrl.startsWith(prefix)) {
+    throw new Error("TODO")
+  }
+  return videoUrl.slice(prefix.length)
+}
+
+/**
+ * @key playlist title
+ */
+interface RawPlaylists {
+  [key: string]: {
+    videos: {
+      videoId: string
+      streamRowId: number
+    }[]
+    playlistRowId: number
+  }
+}
+
+function simplifyPlaylists(rawPlaylists: RawPlaylists) {
+  const playlists: Playlists = {}
+  for (const [playlistTitle, playlist] of Object.entries(rawPlaylists)) {
+    playlists[playlistTitle] = playlist.videos.map(video => video.videoId)
+  }
+  return playlists
+}
