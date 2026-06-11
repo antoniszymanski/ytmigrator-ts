@@ -139,7 +139,7 @@ export default defineProgram({
     name: programName,
     brief: message`Migrate YouTube subscriptions and playlists between various frontends.`,
     author: message`Antoni Szymański ${link("https://github.com/antoniszymanski")}`,
-    bugs: message`${link("https://github.com/antoniszymanski/ytmigrator-ts/issues")}`,
+    bugs: message`Report bugs to: ${link("https://github.com/antoniszymanski/ytmigrator-ts/issues")}.`,
     version: programVersion,
   },
 })
