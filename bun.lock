@@ -7,6 +7,7 @@
       "dependencies": {
         "@googleapis/youtube": "^33.0.0",
         "@optique/core": "1.1.0-dev.2146",
+        "@optique/man": "1.1.0-dev.2146",
         "@optique/run": "1.1.0-dev.2146",
         "google-auth-library": "10.5.0",
         "microdiff": "^1.5.0",
@@ -67,6 +68,8 @@
     "@jridgewell/trace-mapping": ["@jridgewell/trace-mapping@0.3.31", "", { "dependencies": { "@jridgewell/resolve-uri": "^3.1.0", "@jridgewell/sourcemap-codec": "^1.4.14" } }, "sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw=="],
 
     "@optique/core": ["@optique/core@1.1.0-dev.2146", "", {}, "sha512-SOjH1T11PmE/ATdB2j6j+C0NcrX/L1vacCJz2UX035ClmiOhIprOwOpwB+ExOwSoMKR6NOOxCY2p0lMhNfNBbQ=="],
+
+    "@optique/man": ["@optique/man@1.1.0-dev.2146", "", { "dependencies": { "@optique/core": "1.1.0-dev.2146+5fd0a75e", "@optique/run": "1.1.0-dev.2146+5fd0a75e" }, "bin": { "optique-man": "./dist/cli.js" } }, "sha512-lr4orz7ghAm/t6DTVsBkFjFP4L4RDWtFErMAvr1G+58cizpIsmgNgpuh6W1egd1xka49QJgc+kK9KpgcmZgHzA=="],
 
     "@optique/run": ["@optique/run@1.1.0-dev.2146", "", { "dependencies": { "@optique/core": "1.1.0-dev.2146+5fd0a75e" } }, "sha512-Yb/CZCf98LKTicNLSKymuJWFgLAldzsTgHAq/B4lqxlFaSlmMc2Sbfev2NjrL0QmQVK1akpPi1AXQgtvaY1EoA=="],
 

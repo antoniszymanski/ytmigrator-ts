@@ -8,11 +8,13 @@
   "scripts": {
     "prepare": "ts-patch install",
     "format": "biome format --write",
-    "check": "biome check --write"
+    "check": "biome check --write",
+    "build:man": "optique-man ./src/cli.ts -s 1 -o dist/ytmigrator.1"
   },
   "dependencies": {
     "@googleapis/youtube": "^33.0.0",
     "@optique/core": "1.1.0-dev.2146",
+    "@optique/man": "1.1.0-dev.2146",
     "@optique/run": "1.1.0-dev.2146",
     "google-auth-library": "10.5.0",
     "microdiff": "^1.5.0",
