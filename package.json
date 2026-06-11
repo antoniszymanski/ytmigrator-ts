@@ -14,7 +14,7 @@
     "@googleapis/youtube": "^33.0.0",
     "@optique/core": "1.1.0-dev.2146",
     "@optique/run": "1.1.0-dev.2146",
-    "google-auth-library": "10.5.0",
+    "google-auth-library": "10.7.0",
     "microdiff": "^1.5.0",
     "open": "^11.0.0",
     "p-memoize": "^8.0.0",
