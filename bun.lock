@@ -6,8 +6,8 @@
       "name": "ytmigrator",
       "dependencies": {
         "@googleapis/youtube": "^33.0.0",
-        "@optique/core": "1.1.0-dev.2096",
-        "@optique/run": "1.1.0-dev.2096",
+        "@optique/core": "1.1.0-dev.2146",
+        "@optique/run": "1.1.0-dev.2146",
         "google-auth-library": "10.5.0",
         "microdiff": "^1.5.0",
         "open": "^11.0.0",
@@ -66,9 +66,9 @@
 
     "@jridgewell/trace-mapping": ["@jridgewell/trace-mapping@0.3.31", "", { "dependencies": { "@jridgewell/resolve-uri": "^3.1.0", "@jridgewell/sourcemap-codec": "^1.4.14" } }, "sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw=="],
 
-    "@optique/core": ["@optique/core@1.1.0-dev.2096", "", {}, "sha512-obR7JM+imk4C8MkFxBn7uIY3iNLTnDWIvsBCE98Gm/k8mwB2YactUglFWAsDR5SJnwYpfspEIsSUk8wqMMeJzQ=="],
+    "@optique/core": ["@optique/core@1.1.0-dev.2146", "", {}, "sha512-SOjH1T11PmE/ATdB2j6j+C0NcrX/L1vacCJz2UX035ClmiOhIprOwOpwB+ExOwSoMKR6NOOxCY2p0lMhNfNBbQ=="],
 
-    "@optique/run": ["@optique/run@1.1.0-dev.2096", "", { "dependencies": { "@optique/core": "1.1.0-dev.2096+8eda4929" } }, "sha512-Lqw06PkJ+cEBcT4Wn79ij5jEoQTJn8q6+jUXt0DwabgWko/kk68taAbGueRGDr9ObD4SOeNYROncETADMMC5JA=="],
+    "@optique/run": ["@optique/run@1.1.0-dev.2146", "", { "dependencies": { "@optique/core": "1.1.0-dev.2146+5fd0a75e" } }, "sha512-Yb/CZCf98LKTicNLSKymuJWFgLAldzsTgHAq/B4lqxlFaSlmMc2Sbfev2NjrL0QmQVK1akpPi1AXQgtvaY1EoA=="],
 
     "@pkgjs/parseargs": ["@pkgjs/parseargs@0.11.0", "", {}, "sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg=="],
 
