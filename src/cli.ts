@@ -117,7 +117,7 @@ const parser = or(
     ),
 )
 
-function usageLine(usage: Usage, ellipsis = false): Usage {
+function usageLine(usage: Usage): Usage {
   const filtered = usage
     .filter(term => term.type !== "command" && term.type !== "exclusive")
     .map(term => {
@@ -127,7 +127,7 @@ function usageLine(usage: Usage, ellipsis = false): Usage {
         return term
       }
     })
-  if (ellipsis && filtered.length !== usage.length) {
+  if (filtered.length !== usage.length) {
     filtered.push({ type: "ellipsis" })
   }
   return filtered
