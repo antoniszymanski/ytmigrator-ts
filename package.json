@@ -6,10 +6,10 @@
   "type": "module",
   "module": "src/index.ts",
   "scripts": {
-    "prepare": "ts-patch install",
-    "format": "biome format --write",
+    "build:man": "optique-man ./src/cli.ts -s 1 -o dist/ytmigrator.1",
     "check": "biome check --write",
-    "build:man": "optique-man ./src/cli.ts -s 1 -o dist/ytmigrator.1"
+    "format": "biome format --write",
+    "prepare": "ts-patch install"
   },
   "dependencies": {
     "@googleapis/youtube": "^33.0.0",
