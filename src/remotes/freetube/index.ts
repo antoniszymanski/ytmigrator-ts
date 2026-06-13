@@ -12,8 +12,8 @@ import type * as models from "./models"
 
 export class FreeTube {
   constructor(
-    private dir: string,
-    private youtubei: Youtubei,
+    private readonly dir: string,
+    private readonly youtubei: Youtubei,
   ) {}
 
   async import(data: UserData) {
@@ -36,7 +36,7 @@ export class FreeTube {
     await Bun.write(`${this.dir}/subscriptions.db`, `${data}\n`)
   }
 
-  private processChannelEntry = async (channelId: string) => {
+  private readonly processChannelEntry = async (channelId: string) => {
     const channel = await this.youtubei.getChannel(channelId)
     if (!channel) {
       console.warn(`Failed to get information about the channel with ID ${channelId}`)
@@ -56,12 +56,12 @@ export class FreeTube {
     await Bun.write(`${this.dir}/playlists.db`, `${data}\n`)
   }
 
-  private processPlaylistEntry = async (
+  private readonly processPlaylistEntry = async (
     [playlistName, videoIds]: [string, string[]],
     now: number,
   ): Promise<models.Playlist> => {
     return {
-      playlistName: playlistName,
+      playlistName,
       protected: false,
       description: "",
       videos: await compactMap(videoIds, this.processVideoEntry, now),
@@ -71,7 +71,7 @@ export class FreeTube {
     }
   }
 
-  private processVideoEntry = async (videoId: string, now: number): Promise<models.Video | undefined> => {
+  private readonly processVideoEntry = async (videoId: string, now: number): Promise<models.Video | undefined> => {
     const video = await this.youtubei.getVideo(videoId)
     if (!video) {
       console.warn(`Failed to get information about the video with ID ${videoId}`)
