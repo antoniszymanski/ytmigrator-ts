@@ -5,7 +5,7 @@ import typia from "typia"
 import type { UserData } from ".."
 
 export class File {
-  private readonly file: Bun.BunFile
+  private readonly file
   constructor(
     path: string,
     private readonly format: "json" | "json5" | "yaml",
