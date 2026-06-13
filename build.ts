@@ -140,18 +140,15 @@ async function main() {
     case "targets": {
       let stringify
       switch (cli.format) {
-        case "json": {
+        case "json":
           stringify = JSON.stringify
           break
-        }
-        case "json5": {
+        case "json5":
           stringify = Bun.JSON5.stringify
           break
-        }
-        case "yaml": {
+        case "yaml":
           stringify = Bun.YAML.stringify
           break
-        }
       }
       await Bun.stdout.write(stringify(targets, undefined, cli.space) as string)
       break

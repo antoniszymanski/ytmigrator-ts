@@ -17,18 +17,15 @@ export class File {
   async import(data: UserData) {
     let stringify
     switch (this.format) {
-      case "json": {
+      case "json":
         stringify = JSON.stringify
         break
-      }
-      case "json5": {
+      case "json5":
         stringify = Bun.JSON5.stringify
         break
-      }
-      case "yaml": {
+      case "yaml":
         stringify = Bun.YAML.stringify
         break
-      }
     }
     await this.file.write(stringify(data, undefined, this.space) as string)
   }
@@ -37,18 +34,15 @@ export class File {
     const text = await this.file.text()
     let data
     switch (this.format) {
-      case "json": {
+      case "json":
         data = JSON.parse(text)
         break
-      }
-      case "json5": {
+      case "json5":
         data = Bun.JSON5.parse(text)
         break
-      }
-      case "yaml": {
+      case "yaml":
         data = Bun.YAML.parse(text)
         break
-      }
     }
     typia.assertGuardEquals<UserData>(data)
     data.subscriptions = [...new Set(data.subscriptions)]
