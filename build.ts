@@ -93,6 +93,29 @@ const cli = run(parser, {
   showDefault: true,
 })
 
+type Cli<Action extends (typeof cli)["action"]> = typeof cli & { readonly action: Action }
+
+async function main() {
+  switch (cli.action) {
+    case "build":
+      await buildCommand(cli)
+      break
+    case "run":
+      await runCommand(cli)
+      break
+    case "transpile":
+      await transpileCommand(cli)
+      break
+    case "targets":
+      await targetsCommand(cli)
+      break
+    case "man":
+      await manCommand(cli)
+      break
+  }
+}
+main()
+
 const commonConfig: Bun.BuildConfig = {
   entrypoints: [`${import.meta.dir}/src/index.ts`],
   target: "bun",
@@ -109,78 +132,67 @@ const commonConfig: Bun.BuildConfig = {
   },
 }
 
-async function main() {
-  await using disposer = new AsyncDisposableStack()
-  switch (cli.action) {
-    case "build": {
-      await Bun.build({
-        ...commonConfig,
-        compile: {
-          ...(cli.target && { target: cli.target }),
-          outfile: cli.outfile,
-          autoloadBunfig: false,
-          autoloadDotenv: false,
-        },
-        bytecode: cli.bytecode,
-      })
-      await rm(`${dirname(cli.outfile)}/index.js.map`, { force: true })
-      break
-    }
-    case "run": {
-      const dir = disposer.adopt(
-        await mkdtemp(`${tmpdir()}/`), //
-        dir => rm(dir, { recursive: true, force: true }),
-      )
-      await Bun.build({ ...commonConfig, outdir: dir })
-      await Bun.spawn(["bun", "run", dir, ...cli.args], {
-        stdin: "inherit",
-        stdout: "inherit",
-        stderr: "inherit",
-        cwd: cli.cwd,
-      }).exited
-      break
-    }
-    case "transpile": {
-      const config = { ...commonConfig, outdir: cli.outdir }
-      if (!cli.minify) {
-        delete config.minify
-      }
-      await Bun.build(config)
-      break
-    }
-    case "targets": {
-      let stringify
-      switch (cli.format) {
-        case "json":
-          stringify = JSON.stringify
-          break
-        case "json5":
-          stringify = Bun.JSON5.stringify
-          break
-        case "yaml":
-          stringify = Bun.YAML.stringify
-          break
-      }
-      await Bun.stdout.write(stringify(targets, undefined, cli.space) as string)
-      break
-    }
-    case "man": {
-      const dir = disposer.adopt(
-        await mkdtemp(`${tmpdir()}/`), //
-        dir => rm(dir, { recursive: true, force: true }),
-      )
-      await Bun.build({
-        ...commonConfig,
-        entrypoints: [`${import.meta.dir}/src/cli.ts`],
-        outdir: dir,
-      })
-      await Bun.spawn(["bun", "run", "--bun", "optique-man", `${dir}/cli.js`, "-s", "1", "-o", cli.outfile], {
-        stdin: "inherit",
-        stdout: "inherit",
-        stderr: "inherit",
-      }).exited
-      break
-    }
-  }
+async function buildCommand(cli: Cli<"build">) {
+  await Bun.build({
+    ...commonConfig,
+    compile: {
+      ...(cli.target && { target: cli.target }),
+      outfile: cli.outfile,
+      autoloadBunfig: false,
+      autoloadDotenv: false,
+    },
+    bytecode: cli.bytecode,
+  })
+  await rm(`${dirname(cli.outfile)}/index.js.map`, { force: true })
 }
-main()
+
+async function runCommand(cli: Cli<"run">) {
+  await using disposer = new AsyncDisposableStack()
+  const dir = disposer.adopt(await mkdtemp(`${tmpdir()}/`), dir => rm(dir, { recursive: true, force: true }))
+  await Bun.build({ ...commonConfig, outdir: dir })
+  await Bun.spawn(["bun", "run", dir, ...cli.args], {
+    stdin: "inherit",
+    stdout: "inherit",
+    stderr: "inherit",
+    cwd: cli.cwd,
+  }).exited
+}
+
+async function transpileCommand(cli: Cli<"transpile">) {
+  const config = { ...commonConfig, outdir: cli.outdir }
+  if (!cli.minify) {
+    delete config.minify
+  }
+  await Bun.build(config)
+}
+
+async function targetsCommand(cli: Cli<"targets">) {
+  let stringify
+  switch (cli.format) {
+    case "json":
+      stringify = JSON.stringify
+      break
+    case "json5":
+      stringify = Bun.JSON5.stringify
+      break
+    case "yaml":
+      stringify = Bun.YAML.stringify
+      break
+  }
+  await Bun.stdout.write(stringify(targets, undefined, cli.space) as string)
+}
+
+async function manCommand(cli: Cli<"man">) {
+  await using disposer = new AsyncDisposableStack()
+  const dir = disposer.adopt(await mkdtemp(`${tmpdir()}/`), dir => rm(dir, { recursive: true, force: true }))
+  await Bun.build({
+    ...commonConfig,
+    entrypoints: [`${import.meta.dir}/src/cli.ts`],
+    outdir: dir,
+  })
+  await Bun.spawn(["bun", "run", "--bun", "optique-man", `${dir}/cli.js`, "-s", "1", "-o", cli.outfile], {
+    stdin: "inherit",
+    stdout: "inherit",
+    stderr: "inherit",
+  }).exited
+}
