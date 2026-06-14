@@ -95,6 +95,23 @@ const cli = run(parser, {
 
 type Cli<Action extends (typeof cli)["action"]> = typeof cli & { readonly action: Action }
 
+const commonConfig: Bun.BuildConfig = {
+  entrypoints: [`${import.meta.dir}/src/index.ts`],
+  target: "bun",
+  plugins: [UnpluginTypia({ cache: true, log: false })],
+  sourcemap: "linked",
+  minify: {
+    whitespace: true,
+    syntax: true,
+    identifiers: false,
+    keepNames: false,
+  },
+  define: {
+    BUILD_NAME: JSON.stringify("ytmigrator"),
+    BUILD_VERSION: JSON.stringify((await $`git describe --tags --always`.text()).trim()),
+  },
+}
+
 async function main() {
   switch (cli.action) {
     case "build":
@@ -115,23 +132,6 @@ async function main() {
   }
 }
 main()
-
-const commonConfig: Bun.BuildConfig = {
-  entrypoints: [`${import.meta.dir}/src/index.ts`],
-  target: "bun",
-  plugins: [UnpluginTypia({ cache: true, log: false })],
-  sourcemap: "linked",
-  minify: {
-    whitespace: true,
-    syntax: true,
-    identifiers: false,
-    keepNames: false,
-  },
-  define: {
-    BUILD_NAME: JSON.stringify("ytmigrator"),
-    BUILD_VERSION: JSON.stringify((await $`git describe --tags --always`.text()).trim()),
-  },
-}
 
 async function buildCommand(cli: Cli<"build">) {
   await Bun.build({
