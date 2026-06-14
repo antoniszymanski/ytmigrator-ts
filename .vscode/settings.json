@@ -7,8 +7,5 @@
     "editor.defaultFormatter": "biomejs.biome",
     "editor.formatOnSave": true
   },
-  "js/ts.tsdk.path": "node_modules/typescript/lib",
-  "yaml.schemas": {
-    "https://www.schemastore.org/github-workflow.json": [".github/workflows/zizmor.yml"]
-  }
+  "js/ts.tsdk.path": "node_modules/typescript/lib"
 }
