@@ -1,9 +1,10 @@
 {
   "extends": ["@tsconfig/bun/tsconfig.json", "@tsconfig/strictest/tsconfig.json"],
   "compilerOptions": {
-    "types": ["bun"],
+    "types": ["bun", "node"],
     "exactOptionalPropertyTypes": false,
     "noImplicitReturns": false,
-    "plugins": [{ "transform": "typia/lib/transform" }]
+    "plugins": [{ "transform": "typia/lib/transform" }],
+    "paths": { "youtubei": ["./node_modules/youtubei/src"] }
   }
 }

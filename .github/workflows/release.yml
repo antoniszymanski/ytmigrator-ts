@@ -29,7 +29,7 @@ jobs:
         run: bun install
 
       - name: Typecheck
-        run: bun run tsc
+        run: bun run typecheck
 
       - name: Compile
         run: bun run build.ts build --target bun-${{ matrix.target }}
