@@ -148,14 +148,23 @@ async function buildCommand(cli: Cli<"build">) {
 
 async function runCommand(cli: Cli<"run">) {
   await using disposer = new AsyncDisposableStack()
-  const dir = disposer.adopt(await mkdtemp(`${tmpdir()}/`), dir => rm(dir, { recursive: true, force: true }))
-  await Bun.build({ ...commonConfig, outdir: dir })
-  await Bun.spawn(["bun", "run", dir, ...cli.args], {
-    stdin: "inherit",
-    stdout: "inherit",
-    stderr: "inherit",
-    cwd: cli.cwd,
-  }).exited
+  const dir = disposer.adopt(
+    await mkdtemp(`${tmpdir()}/`), //
+    dir => rm(dir, { recursive: true, force: true }),
+  )
+  await Bun.build({
+    ...commonConfig, //
+    outdir: dir,
+  })
+  await Bun.spawn(
+    ["bun", "run", dir, ...cli.args], //
+    {
+      stdin: "inherit",
+      stdout: "inherit",
+      stderr: "inherit",
+      cwd: cli.cwd,
+    },
+  ).exited
 }
 
 async function transpileCommand(cli: Cli<"transpile">) {
@@ -184,15 +193,21 @@ async function targetsCommand(cli: Cli<"targets">) {
 
 async function manCommand(cli: Cli<"man">) {
   await using disposer = new AsyncDisposableStack()
-  const dir = disposer.adopt(await mkdtemp(`${tmpdir()}/`), dir => rm(dir, { recursive: true, force: true }))
+  const dir = disposer.adopt(
+    await mkdtemp(`${tmpdir()}/`), //
+    dir => rm(dir, { recursive: true, force: true }),
+  )
   await Bun.build({
     ...commonConfig,
     entrypoints: [`${import.meta.dir}/src/cli.ts`],
     outdir: dir,
   })
-  await Bun.spawn(["bun", "run", "--bun", "optique-man", `${dir}/cli.js`, "-s", "1", "-o", cli.outfile], {
-    stdin: "inherit",
-    stdout: "inherit",
-    stderr: "inherit",
-  }).exited
+  await Bun.spawn(
+    ["bun", "run", "--bun", "optique-man", `${dir}/cli.js`, "-s", "1", "-o", cli.outfile], //
+    {
+      stdin: "inherit",
+      stdout: "inherit",
+      stderr: "inherit",
+    },
+  ).exited
 }
