@@ -75,6 +75,13 @@ const parser = or(
       space: optional(option("--space", string({ pattern: /^.{0,10}$/ }))),
     }),
   ),
+  command(
+    "man",
+    object({
+      action: constant("man"),
+      outfile: withDefault(option("--outfile", path({ allowCreate: true })), "./dist/ytmigrator.1"),
+    }),
+  ),
 )
 
 const cli = run(parser, {
@@ -155,6 +162,24 @@ async function main() {
           break
       }
       await Bun.stdout.write(stringify(targets, undefined, cli.space) as string)
+      break
+    }
+    case "man": {
+      const dir = await mkdtemp(`${tmpdir()}/`)
+      try {
+        await Bun.build({
+          ...commonConfig,
+          entrypoints: [`${import.meta.dir}/src/cli.ts`],
+          outdir: dir,
+        })
+        await Bun.spawn(["bun", "run", "--bun", "optique-man", `${dir}/cli.js`, "-s", "1", "-o", cli.outfile], {
+          stdin: "inherit",
+          stdout: "inherit",
+          stderr: "inherit",
+        }).exited
+      } finally {
+        await rm(dir, { recursive: true, force: true })
+      }
       break
     }
   }
