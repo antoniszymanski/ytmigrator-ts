@@ -20,7 +20,6 @@ import {
 import { defineProgram } from "@optique/core/program"
 import { path } from "@optique/run"
 import typia from "typia"
-import { name as programName } from "../package.json"
 import { File } from "./remotes/file"
 import { FreeTube } from "./remotes/freetube"
 import { PipePipe } from "./remotes/pipepipe"
@@ -136,10 +135,10 @@ function usageLine(usage: Usage): Usage {
 export default defineProgram({
   parser,
   metadata: {
-    name: programName,
+    name: BUILD_NAME,
+    version: BUILD_VERSION,
     brief: message`Migrate YouTube subscriptions and playlists between various frontends.`,
     author: message`Antoni Szymański ${link("https://github.com/antoniszymanski")}`,
     bugs: message`Report bugs to: ${link("https://github.com/antoniszymanski/ytmigrator-ts/issues")}.`,
-    version: BUILD_VERSION,
   },
 })

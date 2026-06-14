@@ -128,6 +128,7 @@ const commonConfig: Bun.BuildConfig = {
     keepNames: false,
   },
   define: {
+    BUILD_NAME: JSON.stringify("ytmigrator"),
     BUILD_VERSION: JSON.stringify((await $`git describe --tags --always`.text()).trim()),
   },
 }
