@@ -110,6 +110,7 @@ const commonConfig: Bun.BuildConfig = {
 }
 
 async function main() {
+  await using disposer = new AsyncDisposableStack()
   switch (cli.action) {
     case "build": {
       await Bun.build({
@@ -126,18 +127,17 @@ async function main() {
       break
     }
     case "run": {
-      const dir = await mkdtemp(`${tmpdir()}/`)
-      try {
-        await Bun.build({ ...commonConfig, outdir: dir })
-        await Bun.spawn(["bun", "run", dir, ...cli.args], {
-          stdin: "inherit",
-          stdout: "inherit",
-          stderr: "inherit",
-          cwd: cli.cwd,
-        }).exited
-      } finally {
-        await rm(dir, { recursive: true, force: true })
-      }
+      const dir = disposer.adopt(
+        await mkdtemp(`${tmpdir()}/`), //
+        dir => rm(dir, { recursive: true, force: true }),
+      )
+      await Bun.build({ ...commonConfig, outdir: dir })
+      await Bun.spawn(["bun", "run", dir, ...cli.args], {
+        stdin: "inherit",
+        stdout: "inherit",
+        stderr: "inherit",
+        cwd: cli.cwd,
+      }).exited
       break
     }
     case "transpile": {
@@ -165,21 +165,20 @@ async function main() {
       break
     }
     case "man": {
-      const dir = await mkdtemp(`${tmpdir()}/`)
-      try {
-        await Bun.build({
-          ...commonConfig,
-          entrypoints: [`${import.meta.dir}/src/cli.ts`],
-          outdir: dir,
-        })
-        await Bun.spawn(["bun", "run", "--bun", "optique-man", `${dir}/cli.js`, "-s", "1", "-o", cli.outfile], {
-          stdin: "inherit",
-          stdout: "inherit",
-          stderr: "inherit",
-        }).exited
-      } finally {
-        await rm(dir, { recursive: true, force: true })
-      }
+      const dir = disposer.adopt(
+        await mkdtemp(`${tmpdir()}/`), //
+        dir => rm(dir, { recursive: true, force: true }),
+      )
+      await Bun.build({
+        ...commonConfig,
+        entrypoints: [`${import.meta.dir}/src/cli.ts`],
+        outdir: dir,
+      })
+      await Bun.spawn(["bun", "run", "--bun", "optique-man", `${dir}/cli.js`, "-s", "1", "-o", cli.outfile], {
+        stdin: "inherit",
+        stdout: "inherit",
+        stderr: "inherit",
+      }).exited
       break
     }
   }
