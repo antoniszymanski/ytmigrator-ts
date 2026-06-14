@@ -6,5 +6,4 @@
 		// https://docs.renovatebot.com/golang/#module-tidying
 		"gomodTidy",
 	],
-	ignoreDeps: ["google-auth-library"],
 }

@@ -16,7 +16,6 @@
     "@optique/core": "1.1.0-dev.2160",
     "@optique/man": "1.1.0-dev.2160",
     "@optique/run": "1.1.0-dev.2160",
-    "google-auth-library": "10.5.0",
     "microdiff": "^1.5.0",
     "open": "^11.0.0",
     "p-memoize": "^8.0.0",

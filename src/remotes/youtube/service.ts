@@ -1,10 +1,12 @@
 // SPDX-FileCopyrightText: 2026 Antoni Szymański
 // SPDX-License-Identifier: MPL-2.0
 
-import { youtube_v3 } from "@googleapis/youtube"
-import { type Credentials, OAuth2Client } from "google-auth-library"
+import { auth as googleAuth, youtube_v3 } from "@googleapis/youtube"
 import open from "open"
 import typia from "typia"
+
+type OAuth2Client = InstanceType<(typeof googleAuth)["OAuth2"]>
+type Credentials = OAuth2Client["credentials"]
 
 export async function getService(credentialsPath: string, tokenPath: string) {
   const auth = await getAuth(credentialsPath, tokenPath)
@@ -20,7 +22,7 @@ async function getAuth(credentialsPath: string, tokenPath: string) {
     }
   }>(text).installed
 
-  const auth = new OAuth2Client(options.client_id, options.client_secret, "http://localhost:8080")
+  const auth = new googleAuth.OAuth2(options.client_id, options.client_secret, "http://localhost:8080")
   try {
     const credentials = await Bun.file(tokenPath).json()
     typia.assertGuardEquals<Credentials>(credentials)
