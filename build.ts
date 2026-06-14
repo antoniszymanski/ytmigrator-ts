@@ -20,6 +20,7 @@ import {
 } from "@optique/core"
 import { path, run } from "@optique/run"
 import UnpluginTypia from "@typia/unplugin/bun"
+import { $ } from "bun"
 import typia, { type ILlmSchema } from "typia"
 
 const targets = (() => {
@@ -95,6 +96,9 @@ const commonConfig: Bun.BuildConfig = {
     syntax: true,
     identifiers: false,
     keepNames: false,
+  },
+  define: {
+    BUILD_VERSION: JSON.stringify((await $`git describe --tags --always`.text()).trim()),
   },
 }
 

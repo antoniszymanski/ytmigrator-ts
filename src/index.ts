@@ -3,7 +3,6 @@
 
 import type { InferValue } from "@optique/core"
 import { run } from "@optique/run"
-import { version as programVersion } from "../package.json"
 import program, { REMOTES, type RemoteName } from "./cli"
 import type { Exporter, Importer } from "./remotes"
 import { UnreachableCaseError } from "./utils"
@@ -12,7 +11,7 @@ import { Youtubei } from "./Youtubei"
 async function main() {
   const cli = run(program, {
     version: {
-      value: programVersion,
+      value: BUILD_VERSION,
       command: true,
     },
     help: "command",
