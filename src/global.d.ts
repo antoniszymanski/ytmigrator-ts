@@ -7,5 +7,4 @@ declare const BUILD_VERSION: string
 // https://github.com/microsoft/TypeScript/issues/44253#issuecomment-2614240122
 declare interface ObjectConstructor {
   hasOwn<O extends object, T extends PropertyKey = keyof O>(x: object, key: T): x is O & { [K in T]: unknown }
-  hasOwn(o: object, v: PropertyKey): boolean
 }
