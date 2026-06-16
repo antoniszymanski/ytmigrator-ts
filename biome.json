@@ -32,8 +32,7 @@
   "assist": {
     "actions": {
       "source": {
-        "organizeImports": "on",
-        "useSortedPackageJson": "on"
+        "organizeImports": "on"
       }
     }
   }
