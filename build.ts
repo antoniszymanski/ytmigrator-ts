@@ -9,7 +9,7 @@ import {
   choice,
   command,
   constant,
-  negatableFlag,
+  map,
   object,
   option,
   optional,
@@ -48,7 +48,7 @@ const parser = or(
       action: constant("build"),
       outfile: withDefault(option("--outfile", path({ allowCreate: true })), "./dist/ytmigrator"),
       target: optional(option("--target", choice(targets))),
-      bytecode: negatableFlag({ positive: "--bytecode", negative: "--no-bytecode" }),
+      bytecode: map(option("--no-bytecode"), o => !o),
     }),
   ),
   command(
