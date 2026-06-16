@@ -19,7 +19,6 @@ import {
 } from "@optique/core"
 import { defineProgram } from "@optique/core/program"
 import { path } from "@optique/run"
-import typia from "typia"
 import { File } from "./remotes/file"
 import { FreeTube } from "./remotes/freetube"
 import { PipePipe } from "./remotes/pipepipe"
@@ -120,7 +119,7 @@ function usageLine(usage: Usage): Usage {
   const filtered = usage
     .filter(term => term.type !== "command" && term.type !== "exclusive")
     .map(term => {
-      if (typia.is<{ terms: Usage }>(term)) {
+      if (Object.hasOwn(term, "terms")) {
         return { ...term, terms: usageLine(term.terms) }
       } else {
         return term
