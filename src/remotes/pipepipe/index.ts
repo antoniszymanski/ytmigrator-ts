@@ -7,8 +7,8 @@ import { tmpdir } from "node:os"
 import typia from "typia"
 import { LiveVideo } from "youtubei"
 import * as zip from "zip-lib"
-import { getVideoAuthor, type Youtubei } from "../../Youtubei"
 import type { Playlists, Subscriptions, UserData } from ".."
+import { getVideoAuthor, type Youtubei } from "../../Youtubei"
 import { compactMap, diffPlaylists, diffSubscriptions } from "../utils"
 
 export class PipePipe {
@@ -89,7 +89,7 @@ export class PipePipe {
     const createPlaylist = async (name: string, videoIds: string[]) => {
       const videos = await compactMap(videoIds, async videoId => {
         const streamRowId = await this.insertStream(videoId)
-        if (streamRowId) {
+        if (streamRowId !== undefined) {
           return { videoId, streamRowId }
         }
       })
@@ -109,7 +109,7 @@ export class PipePipe {
         throw new Error("TODO")
       }
       const videoId = videoIds[index]?.videoId
-      if (!videoId) {
+      if (videoId === undefined) {
         throw new Error("TODO")
       }
       this.deleteStream(videoId)
@@ -117,7 +117,7 @@ export class PipePipe {
     }
     const createVideo = async (playlistName: string, index: number, id: string) => {
       const streamRowId = await this.insertStream(id)
-      if (!streamRowId) {
+      if (streamRowId === undefined) {
         return
       }
       const rawPlaylists = state[playlistName]
@@ -129,7 +129,7 @@ export class PipePipe {
     }
     const updateVideo = async (playlistName: string, index: number, id: string) => {
       const streamRowId = await this.insertStream(id)
-      if (!streamRowId) {
+      if (streamRowId === undefined) {
         return
       }
       const rawPlaylists = state[playlistName]
@@ -165,7 +165,7 @@ export class PipePipe {
 
   private async insertStream(videoId: string) {
     const existingId = this.getStreamByVideoId(videoId)
-    if (existingId) {
+    if (existingId !== undefined) {
       return existingId
     }
     const video = await this.youtubei.getVideo(videoId)

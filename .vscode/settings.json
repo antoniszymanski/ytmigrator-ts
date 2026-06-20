@@ -3,8 +3,8 @@
     "bun.lock": true,
     "src/remotes/*/schema.sql": true
   },
-  "[javascript][typescript][json][jsonc]": {
-    "editor.defaultFormatter": "biomejs.biome",
+  "[typescript][json][jsonc][json5]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode",
     "editor.formatOnSave": true
   },
   "js/ts.tsdk.path": "node_modules/typescript/lib"

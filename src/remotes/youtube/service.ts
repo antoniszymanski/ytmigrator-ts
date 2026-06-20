@@ -62,7 +62,7 @@ async function getCode(auth: OAuth2Client) {
     routes: {
       "/": async req => {
         const code = new URL(req.url).searchParams.get("code")
-        if (!code) {
+        if (code === null) {
           return new Response("Error: 'code' parameter is missing from the URL", { status: 400 })
         }
         received.resolve(code)

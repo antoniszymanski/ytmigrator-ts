@@ -1,0 +1,13 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "options": {
+    "typeAware": true
+  },
+  "rules": {
+    "object-shorthand": "warn",
+    "typescript/no-floating-promises": "allow",
+    "typescript/no-inferrable-types": "warn",
+    "typescript/prefer-readonly": "warn",
+    "typescript/strict-boolean-expressions": "error"
+  }
+}

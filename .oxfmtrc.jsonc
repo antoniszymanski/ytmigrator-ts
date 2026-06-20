@@ -1,0 +1,13 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "arrowParens": "avoid",
+  "printWidth": 120,
+  "semi": false,
+  "useTabs": false,
+  "sortImports": {
+    "newlinesBetween": false,
+  },
+  "sortPackageJson": {
+    "sortScripts": true,
+  },
+}

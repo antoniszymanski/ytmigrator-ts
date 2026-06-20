@@ -55,7 +55,7 @@ const parser = or(
     "run",
     object({
       action: constant("run"),
-      cwd: withDefault(option("--cwd", path({ mustExist: true, type: "directory" })), process.cwd),
+      cwd: withDefault(option("--cwd", path({ mustExist: true, type: "directory" })), process.cwd()),
       args: passThrough({ format: "greedy" }),
     }),
   ),

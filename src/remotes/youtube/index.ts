@@ -95,7 +95,7 @@ export class YouTube {
       if (resp.data.items) {
         items.push(...resp.data.items)
       }
-      if (!resp.data.nextPageToken) {
+      if (resp.data.nextPageToken == null) {
         break
       }
       pageToken = resp.data.nextPageToken

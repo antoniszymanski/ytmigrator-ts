@@ -4,8 +4,8 @@
   "type": "module",
   "module": "src/index.ts",
   "scripts": {
-    "check": "biome check --write",
-    "format": "biome format --write",
+    "check": "oxlint --fix",
+    "format": "oxfmt",
     "prepare": "ts-patch install",
     "typecheck": "tsc-silent -p tsconfig.json --suppress @node_modules/youtubei"
   },
@@ -22,13 +22,15 @@
     "zip-lib": "^1.3.4"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.4.16",
     "@optique/man": "1.1.0",
     "@tsconfig/bun": "^1.0.10",
     "@tsconfig/strictest": "^2.0.8",
     "@types/bun": "^1.3.14",
     "@types/node": "^26.0.0",
     "@typia/unplugin": "^12.1.1",
+    "oxfmt": "^0.55.0",
+    "oxlint": "^1.70.0",
+    "oxlint-tsgolint": "^0.23.0",
     "ts-patch": "^4.0.1",
     "tsc-silent": "^1.2.2",
     "typescript": "^6.0.3"

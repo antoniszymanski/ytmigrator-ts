@@ -3,6 +3,7 @@
 
 export class UnreachableCaseError extends Error {
   constructor(value: never) {
+    // oxlint-disable-next-line typescript/restrict-template-expressions
     super(`Unreachable case: ${value}`)
   }
 }
