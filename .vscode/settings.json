@@ -7,5 +7,8 @@
     "editor.defaultFormatter": "oxc.oxc-vscode",
     "editor.formatOnSave": true
   },
+  "editor.codeActionsOnSave": {
+    "source.fixAll.oxc": "explicit"
+  },
   "js/ts.tsdk.path": "node_modules/typescript/lib"
 }
