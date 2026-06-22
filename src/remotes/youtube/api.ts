@@ -108,11 +108,6 @@ export class YouTubeApi {
     return resp.data
   }
 
-  /** https://developers.google.com/youtube/v3/docs/playlistItems/delete */
-  async deletePlaylistItem(itemId: string) {
-    await this.service.playlistItems.delete({ id: itemId })
-  }
-
   /** https://developers.google.com/youtube/v3/docs/playlistItems/update */
   async updatePlaylistItem(playlistId: string, itemId: string, videoId: string) {
     return this.service.playlistItems.update({
@@ -128,6 +123,11 @@ export class YouTubeApi {
         },
       },
     })
+  }
+
+  /** https://developers.google.com/youtube/v3/docs/playlistItems/delete */
+  async deletePlaylistItem(itemId: string) {
+    await this.service.playlistItems.delete({ id: itemId })
   }
 
   private async list<T>(
