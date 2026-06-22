@@ -9,7 +9,7 @@ import { LiveVideo } from "youtubei"
 import * as zip from "zip-lib"
 import type { Playlists, Subscriptions, UserData } from ".."
 import { getVideoAuthor, type Youtubei } from "../../Youtubei"
-import { compactMap, diffPlaylists, diffSubscriptions } from "../utils"
+import { compactMap, synchronizePlaylists, synchronizeSubscriptions } from "../utils"
 
 export class PipePipe {
   private constructor(
@@ -50,117 +50,90 @@ export class PipePipe {
   }
 
   private async importSubscriptions(subscriptions: Subscriptions) {
-    const deleteSubscription = (channelId: string) => {
-      this.db.query("DELETE FROM subscriptions WHERE url = ?").run(channelUrl(channelId))
-    }
-    const createSubscription = async (channelId: string) => {
-      const channel = await this.youtubei.getChannel(channelId)
-      if (!channel) {
-        console.warn(`Failed to get information about the channel with ID ${channelId}`)
-        return
-      }
-      this.db
-        .query(
-          "INSERT INTO subscriptions (service_id, url, name, avatar_url, description, notification_mode) VALUES (0, ?, ?, ?, ?, 0)",
-        )
-        .run(channel.url, channel.name, channel.thumbnails?.best ?? null, channel.description ?? null)
-    }
-    const differences = diffSubscriptions(this.exportSubscriptions(), subscriptions)
-    for (const difference of differences) {
-      switch (true) {
-        case typia.is<{ type: "REMOVE"; path: [string] }>(difference):
-          deleteSubscription(difference.path[0])
-          break
-        case typia.is<{ type: "CREATE"; path: [string] }>(difference):
-          await createSubscription(difference.path[0])
-          break
-        default:
-          throw new Error("unreachable")
-      }
-    }
+    await synchronizeSubscriptions({
+      source: this.exportSubscriptions(),
+      target: subscriptions,
+      subscribe: async (channelId: string) => {
+        const channel = await this.youtubei.getChannel(channelId)
+        if (!channel) {
+          console.warn(`Failed to get information about the channel with ID ${channelId}`)
+          return
+        }
+        this.db
+          .query(
+            "INSERT INTO subscriptions (service_id, url, name, avatar_url, description, notification_mode) VALUES (0, ?, ?, ?, ?, 0)",
+          )
+          .run(channel.url, channel.name, channel.thumbnails?.best ?? null, channel.description ?? null)
+      },
+      unsubscribe: (channelId: string) => {
+        this.db.query("DELETE FROM subscriptions WHERE url = ?").run(channelUrl(channelId))
+      },
+    })
   }
 
   private async importPlaylists(playlists: Playlists) {
     const state = this.exportRawPlaylists()
-    const deletePlaylist = (name: string) => {
-      this.deletePlaylist(name)
-      delete state[name]
-    }
-    const createPlaylist = async (name: string, videoIds: string[]) => {
-      const videos = await compactMap(videoIds, async videoId => {
-        const streamRowId = await this.insertStream(videoId)
-        if (streamRowId !== undefined) {
-          return { videoId, streamRowId }
+    await synchronizePlaylists({
+      source: simplifyPlaylists(state),
+      target: playlists,
+      createPlaylist: async (name: string, videoIds: string[]) => {
+        const videos = await compactMap(videoIds, async videoId => {
+          const streamRowId = await this.insertStream(videoId)
+          if (streamRowId !== undefined) {
+            return { videoId, streamRowId }
+          }
+        })
+        if (!videos[0]) {
+          throw new Error("TODO")
         }
-      })
-      if (!videos[0]) {
-        throw new Error("TODO")
-      }
-      const firstVideo = await this.youtubei.getVideo(videos[0].videoId)
-      const playlistRowId = this.insertPlaylist(name, firstVideo?.thumbnails.best ?? null)
-      for (const [index, video] of videos.entries()) {
-        this.insertPlaylistStreamJoin(playlistRowId, video.streamRowId, index)
-      }
-      state[name] = { videos, playlistRowId }
-    }
-    const deleteVideo = (playlistName: string, index: number) => {
-      const videoIds = state[playlistName]?.videos
-      if (!videoIds) {
-        throw new Error("TODO")
-      }
-      const videoId = videoIds[index]?.videoId
-      if (videoId === undefined) {
-        throw new Error("TODO")
-      }
-      this.deleteStream(videoId)
-      videoIds.splice(index, 1)
-    }
-    const createVideo = async (playlistName: string, index: number, id: string) => {
-      const streamRowId = await this.insertStream(id)
-      if (streamRowId === undefined) {
-        return
-      }
-      const rawPlaylists = state[playlistName]
-      if (!rawPlaylists) {
-        throw new Error("TODO")
-      }
-      this.insertPlaylistStreamJoin(rawPlaylists.playlistRowId, streamRowId, index)
-      rawPlaylists.videos[index] = { videoId: id, streamRowId }
-    }
-    const updateVideo = async (playlistName: string, index: number, id: string) => {
-      const streamRowId = await this.insertStream(id)
-      if (streamRowId === undefined) {
-        return
-      }
-      const rawPlaylists = state[playlistName]
-      if (!rawPlaylists) {
-        throw new Error("TODO")
-      }
-      this.updatePlaylistStreamJoin(rawPlaylists.playlistRowId, streamRowId, index)
-      rawPlaylists.videos[index] = { videoId: id, streamRowId }
-    }
-    const differences = diffPlaylists(simplifyPlaylists(state), playlists)
-    for (const difference of differences) {
-      switch (true) {
-        case typia.is<{ type: "REMOVE"; path: [string] }>(difference):
-          deletePlaylist(difference.path[0])
-          break
-        case typia.is<{ type: "CREATE"; path: [string]; value: string[] }>(difference):
-          await createPlaylist(difference.path[0], difference.value)
-          break
-        case typia.is<{ type: "REMOVE"; path: [string, number] }>(difference):
-          deleteVideo(difference.path[0], difference.path[1])
-          break
-        case typia.is<{ type: "CREATE"; path: [string, number]; value: string }>(difference):
-          await createVideo(difference.path[0], difference.path[1], difference.value)
-          break
-        case typia.is<{ type: "CHANGE"; path: [string, number]; value: string }>(difference):
-          await updateVideo(difference.path[0], difference.path[1], difference.value)
-          break
-        default:
-          throw new Error("unreachable")
-      }
-    }
+        const firstVideo = await this.youtubei.getVideo(videos[0].videoId)
+        const playlistRowId = this.insertPlaylist(name, firstVideo?.thumbnails.best ?? null)
+        for (const [index, video] of videos.entries()) {
+          this.insertPlaylistStreamJoin(playlistRowId, video.streamRowId, index)
+        }
+        state[name] = { videos, playlistRowId }
+      },
+      deletePlaylist: (name: string) => {
+        this.deletePlaylist(name)
+        delete state[name]
+      },
+      addVideo: async (playlistName: string, index: number, id: string) => {
+        const streamRowId = await this.insertStream(id)
+        if (streamRowId === undefined) {
+          return
+        }
+        const rawPlaylists = state[playlistName]
+        if (!rawPlaylists) {
+          throw new Error("TODO")
+        }
+        this.insertPlaylistStreamJoin(rawPlaylists.playlistRowId, streamRowId, index)
+        rawPlaylists.videos[index] = { videoId: id, streamRowId }
+      },
+      updateVideo: async (playlistName: string, index: number, id: string) => {
+        const streamRowId = await this.insertStream(id)
+        if (streamRowId === undefined) {
+          return
+        }
+        const rawPlaylists = state[playlistName]
+        if (!rawPlaylists) {
+          throw new Error("TODO")
+        }
+        this.updatePlaylistStreamJoin(rawPlaylists.playlistRowId, streamRowId, index)
+        rawPlaylists.videos[index] = { videoId: id, streamRowId }
+      },
+      removeVideo: (playlistName: string, index: number) => {
+        const videoIds = state[playlistName]?.videos
+        if (!videoIds) {
+          throw new Error("TODO")
+        }
+        const videoId = videoIds[index]?.videoId
+        if (videoId === undefined) {
+          throw new Error("TODO")
+        }
+        this.deleteStream(videoId)
+        videoIds.splice(index, 1)
+      },
+    })
   }
 
   private async insertStream(videoId: string) {

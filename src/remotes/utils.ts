@@ -3,7 +3,8 @@
 
 import { createHash } from "node:crypto"
 import diff from "microdiff"
-import type { Playlists, Subscriptions } from "."
+import typia from "typia"
+import type { MaybePromise, Playlists, Subscriptions } from "."
 
 export async function compactMap<T1, T2 extends unknown[], T3>(
   array: T1[],
@@ -13,16 +14,60 @@ export async function compactMap<T1, T2 extends unknown[], T3>(
   return (await Promise.all(array.map(value => transform(value, ...args)))).filter(value => value !== undefined)
 }
 
-export function diffSubscriptions(a: Subscriptions, b: Subscriptions) {
-  return diff(
-    Object.fromEntries(a.map(value => [value, undefined])),
-    Object.fromEntries(b.map(value => [value, undefined])),
-    { cyclesFix: false },
-  )
+export async function synchronizeSubscriptions(params: {
+  source: Subscriptions
+  target: Subscriptions
+  subscribe: (channelId: string) => MaybePromise<void>
+  unsubscribe: (channelId: string) => MaybePromise<void>
+}) {
+  const a = Object.fromEntries(params.source.map(value => [value, undefined]))
+  const b = Object.fromEntries(params.target.map(value => [value, undefined]))
+  const differences = diff(a, b, { cyclesFix: false })
+  for (const difference of differences) {
+    switch (true) {
+      case typia.is<{ type: "CREATE"; path: [string] }>(difference):
+        await params.subscribe(difference.path[0])
+        break
+      case typia.is<{ type: "REMOVE"; path: [string] }>(difference):
+        await params.unsubscribe(difference.path[0])
+        break
+      default:
+        throw new Error("unreachable")
+    }
+  }
 }
 
-export function diffPlaylists(a: Playlists, b: Playlists) {
-  return diff(a, b, { cyclesFix: false })
+export async function synchronizePlaylists(params: {
+  source: Playlists
+  target: Playlists
+  createPlaylist: (name: string, videoIds: string[]) => MaybePromise<void>
+  deletePlaylist: (name: string) => MaybePromise<void>
+  addVideo: (playlistName: string, index: number, id: string) => MaybePromise<void>
+  updateVideo: (playlistName: string, index: number, id: string) => MaybePromise<void>
+  removeVideo: (playlistName: string, index: number) => MaybePromise<void>
+}) {
+  const differences = diff(params.source, params.target, { cyclesFix: false })
+  for (const difference of differences) {
+    switch (true) {
+      case typia.is<{ type: "CREATE"; path: [string]; value: string[] }>(difference):
+        await params.createPlaylist(difference.path[0], difference.value)
+        break
+      case typia.is<{ type: "REMOVE"; path: [string] }>(difference):
+        await params.deletePlaylist(difference.path[0])
+        break
+      case typia.is<{ type: "CREATE"; path: [string, number]; value: string }>(difference):
+        await params.addVideo(difference.path[0], difference.path[1], difference.value)
+        break
+      case typia.is<{ type: "CHANGE"; path: [string, number]; value: string }>(difference):
+        await params.updateVideo(difference.path[0], difference.path[1], difference.value)
+        break
+      case typia.is<{ type: "REMOVE"; path: [string, number] }>(difference):
+        await params.removeVideo(difference.path[0], difference.path[1])
+        break
+      default:
+        throw new Error("unreachable")
+    }
+  }
 }
 
 export function sha256(data: string) {

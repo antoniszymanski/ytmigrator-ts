@@ -3,7 +3,7 @@
 
 import typia from "typia"
 import type { Playlists, Subscriptions, UserData } from ".."
-import { compactMap, diffPlaylists, diffSubscriptions } from "../utils"
+import { compactMap, synchronizePlaylists, synchronizeSubscriptions } from "../utils"
 import { YouTubeApi } from "./api"
 
 export class YouTube {
@@ -30,26 +30,18 @@ export class YouTube {
       subscriptionIdsByChannelId.set(channelId, subscriptionId)
     }
     const remoteChannelIds = subscriptionIdsByChannelId.keys().toArray()
-    const deleteSubscription = async (channelId: string) => {
-      const subscriptionId = subscriptionIdsByChannelId.get(channelId)
-      if (subscriptionId === undefined) {
-        throw new Error("TODO")
-      }
-      await this.api.deleteSubscription(subscriptionId)
-    }
-    const differences = diffSubscriptions(remoteChannelIds, subscriptions)
-    for (const difference of differences) {
-      switch (true) {
-        case typia.is<{ type: "REMOVE"; path: [string] }>(difference):
-          await deleteSubscription(difference.path[0])
-          break
-        case typia.is<{ type: "CREATE"; path: [string] }>(difference):
-          await this.api.insertSubscription(difference.path[0])
-          break
-        default:
-          throw new Error("unreachable")
-      }
-    }
+    await synchronizeSubscriptions({
+      source: remoteChannelIds,
+      target: subscriptions,
+      subscribe: this.api.insertSubscription.bind(this),
+      unsubscribe: async (channelId: string) => {
+        const subscriptionId = subscriptionIdsByChannelId.get(channelId)
+        if (subscriptionId === undefined) {
+          throw new Error("TODO")
+        }
+        await this.api.deleteSubscription(subscriptionId)
+      },
+    })
   }
 
   private async importPlaylists(playlists: Playlists) {
@@ -67,85 +59,64 @@ export class YouTube {
         ]
       }),
     )
-
-    const deletePlaylist = async (name: string) => {
-      const playlistId = state.get(name)?.playlistId
-      if (playlistId === undefined) {
-        throw new Error("TODO")
-      }
-      await this.api.deletePlaylist(playlistId)
-      state.delete(name)
-    }
-    const createPlaylist = async (name: string, videoIds: string[]) => {
-      const playlist = await this.api.insertPlaylist(name)
-      const playlistTitle = typia.assert<string>(playlist.snippet?.title)
-      const playlistId = typia.assert<string>(playlist.id)
-      const playlistItems = await Promise.all(
-        videoIds.map((videoId, index) => this.api.insertPlaylistItem(playlistId, videoId, index)),
-      )
-      state.set(playlistTitle, { playlistId, playlistItems })
-    }
-    const deleteVideo = async (playlistName: string, index: number) => {
-      const playlistItems = state.get(playlistName)?.playlistItems
-      if (playlistItems === undefined) {
-        throw new Error("TODO")
-      }
-      const itemId = playlistItems[index]?.id
-      if (itemId == null) {
-        throw new Error("TODO")
-      }
-      await this.api.deletePlaylistItem(itemId)
-      playlistItems.splice(index, 1)
-    }
-    const createVideo = async (playlistName: string, index: number, id: string) => {
-      const playlistId = state.get(playlistName)?.playlistId
-      if (playlistId === undefined) {
-        throw new Error("TODO")
-      }
-      await this.api.insertPlaylistItem(playlistId, id, index)
-    }
-    const updateVideo = async (playlistName: string, index: number, id: string) => {
-      const playlist = state.get(playlistName)
-      if (playlist === undefined) {
-        throw new Error("TODO")
-      }
-      const playlistId = playlist.playlistId
-      const itemId = playlist.playlistItems[index]?.id
-      if (itemId == null) {
-        throw new Error("TODO")
-      }
-      await this.api.updatePlaylistItem(playlistId, itemId, id)
-    }
-
     const remotePlaylists: Playlists = {}
     for (const [playlistTitle, { playlistItems }] of state) {
       remotePlaylists[playlistTitle] = playlistItems.map(entry =>
         typia.assert<string>(entry.snippet?.resourceId?.videoId),
       )
     }
-
-    const differences = diffPlaylists(remotePlaylists, playlists)
-    for (const difference of differences) {
-      switch (true) {
-        case typia.is<{ type: "REMOVE"; path: [string] }>(difference):
-          deletePlaylist(difference.path[0])
-          break
-        case typia.is<{ type: "CREATE"; path: [string]; value: string[] }>(difference):
-          await createPlaylist(difference.path[0], difference.value)
-          break
-        case typia.is<{ type: "REMOVE"; path: [string, number] }>(difference):
-          deleteVideo(difference.path[0], difference.path[1])
-          break
-        case typia.is<{ type: "CREATE"; path: [string, number]; value: string }>(difference):
-          await createVideo(difference.path[0], difference.path[1], difference.value)
-          break
-        case typia.is<{ type: "CHANGE"; path: [string, number]; value: string }>(difference):
-          await updateVideo(difference.path[0], difference.path[1], difference.value)
-          break
-        default:
-          throw new Error("unreachable")
-      }
-    }
+    await synchronizePlaylists({
+      source: remotePlaylists,
+      target: playlists,
+      createPlaylist: async (name: string, videoIds: string[]) => {
+        const playlist = await this.api.insertPlaylist(name)
+        const playlistTitle = typia.assert<string>(playlist.snippet?.title)
+        const playlistId = typia.assert<string>(playlist.id)
+        const playlistItems = await Promise.all(
+          videoIds.map((videoId, index) => this.api.insertPlaylistItem(playlistId, videoId, index)),
+        )
+        state.set(playlistTitle, { playlistId, playlistItems })
+      },
+      deletePlaylist: async (name: string) => {
+        const playlistId = state.get(name)?.playlistId
+        if (playlistId === undefined) {
+          throw new Error("TODO")
+        }
+        await this.api.deletePlaylist(playlistId)
+        state.delete(name)
+      },
+      addVideo: async (playlistName: string, index: number, id: string) => {
+        const playlistId = state.get(playlistName)?.playlistId
+        if (playlistId === undefined) {
+          throw new Error("TODO")
+        }
+        await this.api.insertPlaylistItem(playlistId, id, index)
+      },
+      updateVideo: async (playlistName: string, index: number, id: string) => {
+        const playlist = state.get(playlistName)
+        if (playlist === undefined) {
+          throw new Error("TODO")
+        }
+        const playlistId = playlist.playlistId
+        const itemId = playlist.playlistItems[index]?.id
+        if (itemId == null) {
+          throw new Error("TODO")
+        }
+        await this.api.updatePlaylistItem(playlistId, itemId, id)
+      },
+      removeVideo: async (playlistName: string, index: number) => {
+        const playlistItems = state.get(playlistName)?.playlistItems
+        if (playlistItems === undefined) {
+          throw new Error("TODO")
+        }
+        const itemId = playlistItems[index]?.id
+        if (itemId == null) {
+          throw new Error("TODO")
+        }
+        await this.api.deletePlaylistItem(itemId)
+        playlistItems.splice(index, 1)
+      },
+    })
   }
 
   async export(): Promise<UserData> {
