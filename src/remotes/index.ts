@@ -1,6 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Antoni Szymański
 // SPDX-License-Identifier: MPL-2.0
 
+import type { MaybePromise } from "bun"
+
 export interface Importer extends Closer {
   import(data: UserData): MaybePromise<void>
 }
@@ -12,8 +14,6 @@ export interface Exporter extends Closer {
 export interface Closer {
   close?(): MaybePromise<void>
 }
-
-export type MaybePromise<T> = T | Promise<T>
 
 // TODO: rename
 export interface UserData {

@@ -2,9 +2,10 @@
 // SPDX-License-Identifier: MPL-2.0
 
 import { createHash } from "node:crypto"
+import type { MaybePromise } from "bun"
 import diff from "microdiff"
 import typia from "typia"
-import type { MaybePromise, Playlists, Subscriptions } from "."
+import type { Playlists, Subscriptions } from "."
 
 export async function compactMap<T1, T2 extends unknown[], T3>(
   array: T1[],
