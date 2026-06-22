@@ -9,6 +9,7 @@
     "typescript/no-non-null-assertion": "warn",
     "typescript/prefer-readonly": "warn",
     "typescript/promise-function-async": "warn",
+    "typescript/return-await": "warn",
     "typescript/strict-boolean-expressions": "error"
   }
 }
