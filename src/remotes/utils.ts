@@ -12,7 +12,7 @@ export async function compactMap<T1, T2 extends unknown[], T3>(
   transform: (value: T1, ...args: T2) => Promise<T3 | undefined>,
   ...args: T2
 ) {
-  return (await Promise.all(array.map(value => transform(value, ...args)))).filter(value => value !== undefined)
+  return (await Promise.all(array.map( async value => transform(value, ...args)))).filter(value => value !== undefined)
 }
 
 export async function synchronizeSubscriptions(params: {

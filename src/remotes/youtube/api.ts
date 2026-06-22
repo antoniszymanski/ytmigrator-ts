@@ -15,7 +15,7 @@ export class YouTubeApi {
 
   /** https://developers.google.com/youtube/v3/docs/subscriptions/list */
   async listSubscriptions() {
-    return await this.list(pageToken =>
+    return await this.list( async pageToken =>
       this.service.subscriptions.list({
         part: ["snippet"],
         maxResults: 50,
@@ -46,7 +46,7 @@ export class YouTubeApi {
 
   /** https://developers.google.com/youtube/v3/docs/playlists/list */
   async listPlaylists() {
-    return await this.list(pageToken =>
+    return await this.list( async pageToken =>
       this.service.playlists.list({
         part: ["snippet"],
         maxResults: 50,
@@ -79,7 +79,7 @@ export class YouTubeApi {
 
   /** https://developers.google.com/youtube/v3/docs/playlistItems/list */
   async listPlaylistItems(playlistId: string) {
-    return await this.list(pageToken =>
+    return await this.list( async pageToken =>
       this.service.playlistItems.list({
         part: ["snippet"],
         maxResults: 50,

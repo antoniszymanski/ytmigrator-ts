@@ -32,11 +32,11 @@ async function main() {
   const youtubei = new Youtubei()
   const src = disposer.adopt(
     await createRemote<Exporter>(cli.remote, cli.options, youtubei), //
-    remote => remote.close?.(),
+    async remote => remote.close?.(),
   )
   const dst = disposer.adopt(
     await createRemote<Importer>(cli.dst.remote, cli.dst.options, youtubei), //
-    remote => remote.close?.(),
+    async remote => remote.close?.(),
   )
   const data = await src.export()
   await dst.import(data)
