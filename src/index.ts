@@ -41,7 +41,7 @@ async function main() {
   const data = await src.export()
   await dst.import(data)
 }
-main()
+void main()
 
 async function createRemote<T>(name: RemoteName, options: unknown, youtubei: Youtubei) {
   type Options<Name extends RemoteName> = InferValue<ReturnType<(typeof REMOTES)[Name]["options"]>>

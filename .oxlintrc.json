@@ -5,7 +5,6 @@
   },
   "rules": {
     "object-shorthand": "warn",
-    "typescript/no-floating-promises": "allow",
     "typescript/no-inferrable-types": "warn",
     "typescript/no-non-null-assertion": "warn",
     "typescript/prefer-readonly": "warn",

@@ -131,7 +131,7 @@ async function main() {
       break
   }
 }
-main()
+void main()
 
 async function buildCommand(cli: Cli<"build">) {
   await Bun.build({
