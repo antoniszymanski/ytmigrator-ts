@@ -32,6 +32,7 @@ export class YouTubeApi {
       requestBody: {
         snippet: {
           resourceId: {
+            kind: "youtube#channel",
             channelId,
           },
         },
@@ -98,6 +99,7 @@ export class YouTubeApi {
           playlistId,
           position,
           resourceId: {
+            kind: "youtube#video",
             videoId,
           },
         },
@@ -120,6 +122,7 @@ export class YouTubeApi {
         snippet: {
           playlistId,
           resourceId: {
+            kind: "youtube#video",
             videoId,
           },
         },
