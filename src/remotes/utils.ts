@@ -28,15 +28,12 @@ export async function synchronizeSubscriptions(params: {
   const b = Object.fromEntries(params.target.map(value => [value, undefined]))
   const differences = diff(a, b, { cyclesFix: false })
   for (const difference of differences) {
-    switch (true) {
-      case typia.is<{ type: "CREATE"; path: [string] }>(difference):
-        await params.subscribe(difference.path[0])
-        break
-      case typia.is<{ type: "REMOVE"; path: [string] }>(difference):
-        await params.unsubscribe(difference.path[0])
-        break
-      default:
-        throw new Error("unreachable")
+    if (typia.is<{ type: "CREATE"; path: [string] }>(difference)) {
+      await params.subscribe(difference.path[0])
+    } else if (typia.is<{ type: "REMOVE"; path: [string] }>(difference)) {
+      await params.unsubscribe(difference.path[0])
+    } else {
+      throw new Error("unreachable")
     }
   }
 }
@@ -52,24 +49,18 @@ export async function synchronizePlaylists(params: {
 }) {
   const differences = diff(params.source, params.target, { cyclesFix: false })
   for (const difference of differences) {
-    switch (true) {
-      case typia.is<{ type: "CREATE"; path: [string]; value: string[] }>(difference):
-        await params.createPlaylist(difference.path[0], difference.value)
-        break
-      case typia.is<{ type: "REMOVE"; path: [string] }>(difference):
-        await params.deletePlaylist(difference.path[0])
-        break
-      case typia.is<{ type: "CREATE"; path: [string, number]; value: string }>(difference):
-        await params.addVideo(difference.path[0], difference.path[1], difference.value)
-        break
-      case typia.is<{ type: "CHANGE"; path: [string, number]; value: string }>(difference):
-        await params.updateVideo(difference.path[0], difference.path[1], difference.value)
-        break
-      case typia.is<{ type: "REMOVE"; path: [string, number] }>(difference):
-        await params.removeVideo(difference.path[0], difference.path[1])
-        break
-      default:
-        throw new Error("unreachable")
+    if (typia.is<{ type: "CREATE"; path: [string]; value: string[] }>(difference)) {
+      await params.createPlaylist(difference.path[0], difference.value)
+    } else if (typia.is<{ type: "REMOVE"; path: [string] }>(difference)) {
+      await params.deletePlaylist(difference.path[0])
+    } else if (typia.is<{ type: "CREATE"; path: [string, number]; value: string }>(difference)) {
+      await params.addVideo(difference.path[0], difference.path[1], difference.value)
+    } else if (typia.is<{ type: "CHANGE"; path: [string, number]; value: string }>(difference)) {
+      await params.updateVideo(difference.path[0], difference.path[1], difference.value)
+    } else if (typia.is<{ type: "REMOVE"; path: [string, number] }>(difference)) {
+      await params.removeVideo(difference.path[0], difference.path[1])
+    } else {
+      throw new Error("unreachable")
     }
   }
 }

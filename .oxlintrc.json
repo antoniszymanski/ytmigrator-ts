@@ -10,6 +10,7 @@
     "typescript/prefer-readonly": "warn",
     "typescript/promise-function-async": "warn",
     "typescript/return-await": "warn",
-    "typescript/strict-boolean-expressions": "error"
+    "typescript/strict-boolean-expressions": "error",
+    "typescript/switch-exhaustiveness-check": "error"
   }
 }

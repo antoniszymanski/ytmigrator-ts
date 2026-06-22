@@ -5,7 +5,6 @@ import type { InferValue } from "@optique/core"
 import { run } from "@optique/run"
 import program, { REMOTES, type RemoteName } from "./cli"
 import type { Exporter, Importer } from "./remotes"
-import { UnreachableCaseError } from "./utils"
 import { Youtubei } from "./Youtubei"
 
 async function main() {
@@ -67,8 +66,6 @@ async function createRemote<T>(name: RemoteName, options: unknown, youtubei: You
       instance = await REMOTES[name].remote.create(credentials, token)
       break
     }
-    default:
-      throw new UnreachableCaseError(name)
   }
   return instance as T
 }
