@@ -1,18 +1,17 @@
 // SPDX-FileCopyrightText: 2026 Antoni Szymański
 // SPDX-License-Identifier: MPL-2.0
 
-import type { youtube_v3 } from "@googleapis/youtube"
 import typia from "typia"
 import type { Playlists, Subscriptions, UserData } from ".."
 import { compactMap, diffPlaylists, diffSubscriptions } from "../utils"
-import { getService } from "./service"
+import { YouTubeApi } from "./api"
 
 export class YouTube {
-  private constructor(private readonly service: youtube_v3.Youtube) {}
+  private constructor(private readonly api: YouTubeApi) {}
 
   static async create(credentialsPath: string, tokenPath: string) {
-    const service = await getService(credentialsPath, tokenPath)
-    return new this(service)
+    const api = await YouTubeApi.create(credentialsPath, tokenPath)
+    return new this(api)
   }
 
   async import(data: UserData) {
@@ -23,7 +22,7 @@ export class YouTube {
   }
 
   private async importSubscriptions(subscriptions: Subscriptions) {
-    const remoteSubscriptions = await this.listSubscriptions()
+    const remoteSubscriptions = await this.api.listSubscriptions()
     const subscriptionIdsByChannelId = new Map<string, string>()
     for (const subscription of remoteSubscriptions) {
       const channelId = typia.assert<string>(subscription.snippet?.resourceId?.channelId)
@@ -36,7 +35,7 @@ export class YouTube {
       if (subscriptionId === undefined) {
         throw new Error("TODO")
       }
-      await this.deleteSubscription(subscriptionId)
+      await this.api.deleteSubscription(subscriptionId)
     }
     const differences = diffSubscriptions(remoteChannelIds, subscriptions)
     for (const difference of differences) {
@@ -45,7 +44,7 @@ export class YouTube {
           await deleteSubscription(difference.path[0])
           break
         case typia.is<{ type: "CREATE"; path: [string] }>(difference):
-          await this.insertSubscription(difference.path[0])
+          await this.api.insertSubscription(difference.path[0])
           break
         default:
           throw new Error("unreachable")
@@ -53,31 +52,12 @@ export class YouTube {
     }
   }
 
-  /** https://developers.google.com/youtube/v3/docs/subscriptions/delete */
-  private async deleteSubscription(subscriptionId: string) {
-    await this.service.subscriptions.delete({ id: subscriptionId })
-  }
-
-  /** https://developers.google.com/youtube/v3/docs/subscriptions/insert */
-  async insertSubscription(channelId: string) {
-    await this.service.subscriptions.insert({
-      part: ["snippet"],
-      requestBody: {
-        snippet: {
-          resourceId: {
-            channelId,
-          },
-        },
-      },
-    })
-  }
-
   private async importPlaylists(playlists: Playlists) {
     const state = new Map(
-      await compactMap(await this.listPlaylists(), async playlist => {
+      await compactMap(await this.api.listPlaylists(), async playlist => {
         const playlistTitle = typia.assert<string>(playlist.snippet?.title)
         const playlistId = typia.assert<string>(playlist.id)
-        const playlistItems = await this.listPlaylistItems(playlistId)
+        const playlistItems = await this.api.listPlaylistItems(playlistId)
         return [
           playlistTitle,
           {
@@ -93,15 +73,15 @@ export class YouTube {
       if (playlistId === undefined) {
         throw new Error("TODO")
       }
-      await this.deletePlaylist(playlistId)
+      await this.api.deletePlaylist(playlistId)
       state.delete(name)
     }
     const createPlaylist = async (name: string, videoIds: string[]) => {
-      const playlist = await this.insertPlaylist(name)
+      const playlist = await this.api.insertPlaylist(name)
       const playlistTitle = typia.assert<string>(playlist.snippet?.title)
       const playlistId = typia.assert<string>(playlist.id)
       const playlistItems = await Promise.all(
-        videoIds.map((videoId, index) => this.insertPlaylistItem(playlistId, videoId, index)),
+        videoIds.map((videoId, index) => this.api.insertPlaylistItem(playlistId, videoId, index)),
       )
       state.set(playlistTitle, { playlistId, playlistItems })
     }
@@ -114,7 +94,7 @@ export class YouTube {
       if (itemId == null) {
         throw new Error("TODO")
       }
-      await this.deletePlaylistItem(itemId)
+      await this.api.deletePlaylistItem(itemId)
       playlistItems.splice(index, 1)
     }
     const createVideo = async (playlistName: string, index: number, id: string) => {
@@ -122,7 +102,7 @@ export class YouTube {
       if (playlistId === undefined) {
         throw new Error("TODO")
       }
-      await this.insertPlaylistItem(playlistId, id, index)
+      await this.api.insertPlaylistItem(playlistId, id, index)
     }
     const updateVideo = async (playlistName: string, index: number, id: string) => {
       const playlist = state.get(playlistName)
@@ -134,7 +114,7 @@ export class YouTube {
       if (itemId == null) {
         throw new Error("TODO")
       }
-      await this.updatePlaylistItem(playlistId, id, itemId)
+      await this.api.updatePlaylistItem(playlistId, itemId, id)
     }
 
     const remotePlaylists: Playlists = {}
@@ -168,92 +148,23 @@ export class YouTube {
     }
   }
 
-  /** https://developers.google.com/youtube/v3/docs/playlists/delete */
-  private async deletePlaylist(playlistId: string) {
-    await this.service.subscriptions.delete({ id: playlistId })
-  }
-
-  /** https://developers.google.com/youtube/v3/docs/playlists/insert */
-  private async insertPlaylist(title: string) {
-    const resp = await this.service.playlists.insert({
-      part: ["snippet", "status"],
-      requestBody: {
-        snippet: {
-          title,
-        },
-        status: {
-          privacyStatus: "private",
-        },
-      },
-    })
-    return resp.data
-  }
-
-  /** https://developers.google.com/youtube/v3/docs/playlistItems/insert */
-  private async insertPlaylistItem(playlistId: string, videoId: string, position: number) {
-    const resp = await this.service.playlistItems.insert({
-      part: ["snippet"],
-      requestBody: {
-        snippet: {
-          playlistId,
-          position,
-          resourceId: {
-            videoId,
-          },
-        },
-      },
-    })
-    return resp.data
-  }
-
-  private async deletePlaylistItem(itemId: string) {
-    await this.service.playlistItems.delete({ id: itemId })
-  }
-
-  private async updatePlaylistItem(playlistId: string, itemId: string, videoId: string) {
-    return await this.service.playlistItems.update({
-      part: ["id", "snippet"],
-      requestBody: {
-        id: itemId,
-        snippet: {
-          playlistId,
-          resourceId: {
-            videoId,
-          },
-        },
-      },
-    })
-  }
-
   async export(): Promise<UserData> {
     const [subscriptions, playlists] = await Promise.all([this.exportSubscriptions(), this.exportPlaylists()])
     return { subscriptions, playlists }
   }
 
   private async exportSubscriptions(): Promise<Subscriptions> {
-    return (await this.listSubscriptions()).map(entry => {
+    return (await this.api.listSubscriptions()).map(entry => {
       const channelId = entry.snippet?.resourceId?.channelId
       typia.assertGuard<string>(channelId)
       return channelId
     })
   }
 
-  /** https://developers.google.com/youtube/v3/docs/subscriptions/list */
-  private async listSubscriptions() {
-    return await this.list(pageToken =>
-      this.service.subscriptions.list({
-        part: ["snippet"],
-        maxResults: 50,
-        mine: true,
-        pageToken,
-      }),
-    )
-  }
-
   private async exportPlaylists(): Promise<Playlists> {
     return Object.fromEntries(
       await compactMap(
-        (await this.listPlaylists()).map(entry => {
+        (await this.api.listPlaylists()).map(entry => {
           const validated = {
             playlistId: entry.id,
             playlistName: entry.snippet?.title,
@@ -262,7 +173,7 @@ export class YouTube {
           return validated
         }),
         async ({ playlistId, playlistName }) => {
-          const videoIds = (await this.listPlaylistItems(playlistId)).map(entry => {
+          const videoIds = (await this.api.listPlaylistItems(playlistId)).map(entry => {
             const videoId = entry.snippet?.resourceId?.videoId
             typia.assertGuard<string>(videoId)
             return videoId
@@ -271,45 +182,5 @@ export class YouTube {
         },
       ),
     )
-  }
-
-  private async listPlaylists() {
-    return await this.list(pageToken =>
-      this.service.playlists.list({
-        part: ["snippet"],
-        maxResults: 50,
-        mine: true,
-        pageToken,
-      }),
-    )
-  }
-
-  private async listPlaylistItems(playlistId: string) {
-    return await this.list(pageToken =>
-      this.service.playlistItems.list({
-        part: ["snippet"],
-        maxResults: 50,
-        playlistId,
-        pageToken,
-      }),
-    )
-  }
-
-  private async list<T>(
-    fetchPage: (pageToken?: string) => Promise<{ data: { items?: T[]; nextPageToken?: string | null } }>,
-  ) {
-    const items = []
-    let pageToken
-    while (true) {
-      const resp = await fetchPage(pageToken)
-      if (resp.data.items) {
-        items.push(...resp.data.items)
-      }
-      if (resp.data.nextPageToken == null) {
-        break
-      }
-      pageToken = resp.data.nextPageToken
-    }
-    return items
   }
 }

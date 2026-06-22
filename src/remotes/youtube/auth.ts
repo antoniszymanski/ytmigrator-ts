@@ -1,19 +1,14 @@
 // SPDX-FileCopyrightText: 2026 Antoni Szymański
 // SPDX-License-Identifier: MPL-2.0
 
-import { auth as googleAuth, youtube_v3 } from "@googleapis/youtube"
+import { auth as googleAuth } from "@googleapis/youtube"
 import open from "open"
 import typia from "typia"
 
 type OAuth2Client = InstanceType<(typeof googleAuth)["OAuth2"]>
 type Credentials = OAuth2Client["credentials"]
 
-export async function getService(credentialsPath: string, tokenPath: string) {
-  const auth = await getAuth(credentialsPath, tokenPath)
-  return new youtube_v3.Youtube({ auth })
-}
-
-async function getAuth(credentialsPath: string, tokenPath: string) {
+export async function getAuth(credentialsPath: string, tokenPath: string) {
   const text = await Bun.file(credentialsPath).text()
   const options = typia.json.assertParse<{
     installed: {
