@@ -73,7 +73,7 @@ export class YouTube {
         const playlistTitle = typia.assert<string>(playlist.snippet?.title)
         const playlistId = typia.assert<string>(playlist.id)
         const playlistItems = await Promise.all(
-          videoIds.map( async (videoId, index) => this.api.insertPlaylistItem(playlistId, videoId, index)),
+          videoIds.map(async (videoId, index) => this.api.insertPlaylistItem(playlistId, videoId, index)),
         )
         state.set(playlistTitle, { playlistId, playlistItems })
       },

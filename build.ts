@@ -151,7 +151,7 @@ async function runCommand(cli: Cli<"run">) {
   await using disposer = new AsyncDisposableStack()
   const dir = disposer.adopt(
     await mkdtemp(`${tmpdir()}/`), //
-     async dir => rm(dir, { recursive: true, force: true }),
+    async dir => rm(dir, { recursive: true, force: true }),
   )
   await Bun.build({
     ...commonConfig, //
@@ -196,7 +196,7 @@ async function manCommand(cli: Cli<"man">) {
   await using disposer = new AsyncDisposableStack()
   const dir = disposer.adopt(
     await mkdtemp(`${tmpdir()}/`), //
-     async dir => rm(dir, { recursive: true, force: true }),
+    async dir => rm(dir, { recursive: true, force: true }),
   )
   await Bun.build({
     ...commonConfig,

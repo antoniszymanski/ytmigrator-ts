@@ -8,12 +8,12 @@ import { type BaseVideo, Client, type LiveVideo, type Video } from "youtubei"
 export class Youtubei extends Client {
   @pMemoizeDecorator()
   override async getVideo<T extends Video | LiveVideo | undefined>(videoId: string) {
-    return  pRetry(async () =>  super.getVideo<T>(videoId), { retries: 3 })
+    return pRetry(async () => super.getVideo<T>(videoId), { retries: 3 })
   }
 
   @pMemoizeDecorator()
   override async getChannel(channelId: string) {
-    return  pRetry(async () =>  super.getChannel(channelId), { retries: 3 })
+    return pRetry(async () => super.getChannel(channelId), { retries: 3 })
   }
 }
 
