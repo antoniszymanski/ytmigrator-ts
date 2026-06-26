@@ -80,18 +80,18 @@ export class PipePipe {
         const videos = await compactMap(videoIds, async videoId => {
           const streamRowId = await this.insertStream(videoId)
           if (streamRowId !== undefined) {
-            return { videoId, streamRowId }
+            return { id: videoId, streamRowId }
           }
         })
         if (!videos[0]) {
           throw new Error("TODO")
         }
-        const firstVideo = await this.youtubei.getVideo(videos[0].videoId)
-        const playlistRowId = this.insertPlaylist(name, firstVideo?.thumbnails.best ?? null)
+        const firstVideo = await this.youtubei.getVideo(videos[0].id)
+        const rowId = this.insertPlaylist(name, firstVideo?.thumbnails.best ?? null)
         for (const [index, video] of videos.entries()) {
-          this.insertPlaylistStreamJoin(playlistRowId, video.streamRowId, index)
+          this.insertPlaylistStreamJoin(rowId, video.streamRowId, index)
         }
-        state.set(name, { videos, playlistRowId })
+        state.set(name, { videos, rowId })
       },
       deletePlaylist: (name: string) => {
         this.deletePlaylist(name)
@@ -102,36 +102,36 @@ export class PipePipe {
         if (streamRowId === undefined) {
           return
         }
-        const rawPlaylists = state.get(playlistName)
-        if (!rawPlaylists) {
+        const playlist = state.get(playlistName)
+        if (!playlist) {
           throw new Error("TODO")
         }
-        this.insertPlaylistStreamJoin(rawPlaylists.playlistRowId, streamRowId, index)
-        rawPlaylists.videos[index] = { videoId: id, streamRowId }
+        this.insertPlaylistStreamJoin(playlist.rowId, streamRowId, index)
+        playlist.videos[index] = { id, streamRowId }
       },
       updateVideo: async (playlistName: string, index: number, id: string) => {
         const streamRowId = await this.insertStream(id)
         if (streamRowId === undefined) {
           return
         }
-        const rawPlaylists = state.get(playlistName)
-        if (!rawPlaylists) {
+        const playlist = state.get(playlistName)
+        if (!playlist) {
           throw new Error("TODO")
         }
-        this.updatePlaylistStreamJoin(rawPlaylists.playlistRowId, streamRowId, index)
-        rawPlaylists.videos[index] = { videoId: id, streamRowId }
+        this.updatePlaylistStreamJoin(playlist.rowId, streamRowId, index)
+        playlist.videos[index] = { id, streamRowId }
       },
       removeVideo: (playlistName: string, index: number) => {
-        const videoIds = state.get(playlistName)?.videos
-        if (!videoIds) {
+        const videos = state.get(playlistName)?.videos
+        if (!videos) {
           throw new Error("TODO")
         }
-        const videoId = videoIds[index]?.videoId
+        const videoId = videos[index]?.id
         if (videoId === undefined) {
           throw new Error("TODO")
         }
         this.deleteStream(videoId)
-        videoIds.splice(index, 1)
+        videos.splice(index, 1)
       },
     })
   }
@@ -240,12 +240,9 @@ export class PipePipe {
           .map(uid => {
             const row = this.db.query("SELECT url FROM streams WHERE uid = ?").get(uid)
             typia.assertGuard<{ url: string }>(row)
-            return {
-              videoId: videoId(row.url),
-              streamRowId: uid,
-            }
+            return { id: videoId(row.url), streamRowId: uid }
           })
-        return [row.name, { videos, playlistRowId: row.uid }] as const
+        return [row.name, { videos, rowId: row.uid }] as const
       })
     return new Map(entries)
   }
@@ -271,23 +268,20 @@ function videoId(videoUrl: string) {
   return videoUrl.slice(prefix.length)
 }
 
-/**
- * @key playlist title
- */
 type RawPlaylists = Map<
   string,
   {
+    rowId: number
     videos: {
-      videoId: string
+      id: string
       streamRowId: number
     }[]
-    playlistRowId: number
   }
 >
 
 function simplifyPlaylists(rawPlaylists: RawPlaylists): Playlists {
   const entries = rawPlaylists
     .entries()
-    .map(([playlistTitle, playlist]) => [playlistTitle, playlist.videos.map(video => video.videoId)] as const)
+    .map(([name, playlist]) => [name, playlist.videos.map(video => video.id)] as const)
   return new Map(entries)
 }
