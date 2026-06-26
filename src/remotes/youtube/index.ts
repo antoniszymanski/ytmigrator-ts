@@ -23,19 +23,20 @@ export class YouTube {
 
   private async importSubscriptions(subscriptions: Subscriptions) {
     const remoteSubscriptions = await this.api.listSubscriptions()
-    const subscriptionIdsByChannelId = new Map<string, string>()
-    for (const subscription of remoteSubscriptions) {
+    const stateEntries = remoteSubscriptions.map(subscription => {
       const channelId = typia.assert<string>(subscription.snippet?.resourceId?.channelId)
       const subscriptionId = typia.assert<string>(subscription.id)
-      subscriptionIdsByChannelId.set(channelId, subscriptionId)
-    }
-    const remoteChannelIds = new Set(subscriptionIdsByChannelId.keys())
+      return [channelId, subscriptionId] as const
+    })
+    const state = new Map(stateEntries)
+    const source = new Set(state.keys())
+
     await synchronizeSubscriptions({
-      source: remoteChannelIds,
+      source,
       target: subscriptions,
       subscribe: this.api.insertSubscription.bind(this),
       unsubscribe: async (channelId: string) => {
-        const subscriptionId = subscriptionIdsByChannelId.get(channelId)
+        const subscriptionId = state.get(channelId)
         if (subscriptionId === undefined) {
           throw new Error("TODO")
         }
@@ -45,50 +46,48 @@ export class YouTube {
   }
 
   private async importPlaylists(playlists: Playlists) {
-    const state = new Map(
-      await compactMap(await this.api.listPlaylists(), async playlist => {
-        const playlistTitle = typia.assert<string>(playlist.snippet?.title)
-        const playlistId = typia.assert<string>(playlist.id)
-        const playlistItems = await this.api.listPlaylistItems(playlistId)
-        return [
-          playlistTitle,
-          {
-            playlistId,
-            playlistItems,
-          },
-        ]
-      }),
-    )
-    const remotePlaylists = new Map(
-      state.entries().map(([playlistTitle, { playlistItems }]) => {
-        return [
-          playlistTitle,
-          playlistItems.map(entry => typia.assert<string>(entry.snippet?.resourceId?.videoId)),
-        ] as const
-      }),
-    )
+    const remotePlaylists = await this.api.listPlaylists()
+    const stateEntries = await compactMap(remotePlaylists, async playlist => {
+      const name = typia.assert<string>(playlist.snippet?.title)
+      const id = typia.assert<string>(playlist.id)
+      const items = await this.api.listPlaylistItems(id)
+      const videos = items.map(item => ({
+        id: typia.assert<string>(item.snippet?.resourceId?.videoId),
+        itemId: typia.assert<string>(item.id),
+      }))
+      return [name, { id, videos }] as const
+    })
+    const state = new Map(stateEntries)
+
+    const sourceEntries = state
+      .entries() //
+      .map(([name, { videos }]) => [name, videos.map(video => video.id)] as const)
+    const source = new Map(sourceEntries)
+
     await synchronizePlaylists({
-      source: remotePlaylists,
+      source,
       target: playlists,
       createPlaylist: async (name: string, videoIds: string[]) => {
         const playlist = await this.api.insertPlaylist(name)
-        const playlistTitle = typia.assert<string>(playlist.snippet?.title)
-        const playlistId = typia.assert<string>(playlist.id)
-        const playlistItems = await Promise.all(
-          videoIds.map(async (videoId, index) => this.api.insertPlaylistItem(playlistId, videoId, index)),
-        )
-        state.set(playlistTitle, { playlistId, playlistItems })
+        const id = typia.assert<string>(playlist.id)
+        const itemPromises = videoIds.map(async (videoId, index) => this.api.insertPlaylistItem(id, videoId, index))
+        const items = await Promise.all(itemPromises)
+        const videos = items.map(item => ({
+          id: typia.assert<string>(item.snippet?.resourceId?.videoId),
+          itemId: typia.assert<string>(item.id),
+        }))
+        state.set(name, { id, videos })
       },
       deletePlaylist: async (name: string) => {
-        const playlistId = state.get(name)?.playlistId
-        if (playlistId === undefined) {
+        const id = state.get(name)?.id
+        if (id === undefined) {
           throw new Error("TODO")
         }
-        await this.api.deletePlaylist(playlistId)
+        await this.api.deletePlaylist(id)
         state.delete(name)
       },
       addVideo: async (playlistName: string, index: number, id: string) => {
-        const playlistId = state.get(playlistName)?.playlistId
+        const playlistId = state.get(playlistName)?.id
         if (playlistId === undefined) {
           throw new Error("TODO")
         }
@@ -96,27 +95,26 @@ export class YouTube {
       },
       updateVideo: async (playlistName: string, index: number, id: string) => {
         const playlist = state.get(playlistName)
-        if (playlist === undefined) {
+        if (!playlist) {
           throw new Error("TODO")
         }
-        const playlistId = playlist.playlistId
-        const itemId = playlist.playlistItems[index]?.id
-        if (itemId == null) {
+        const itemId = playlist.videos[index]?.itemId
+        if (itemId === undefined) {
           throw new Error("TODO")
         }
-        await this.api.updatePlaylistItem(playlistId, itemId, id)
+        await this.api.updatePlaylistItem(playlist.id, itemId, id)
       },
       removeVideo: async (playlistName: string, index: number) => {
-        const playlistItems = state.get(playlistName)?.playlistItems
-        if (playlistItems === undefined) {
+        const videos = state.get(playlistName)?.videos
+        if (!videos) {
           throw new Error("TODO")
         }
-        const itemId = playlistItems[index]?.id
-        if (itemId == null) {
+        const itemId = videos[index]?.itemId
+        if (itemId === undefined) {
           throw new Error("TODO")
         }
         await this.api.deletePlaylistItem(itemId)
-        playlistItems.splice(index, 1)
+        videos.splice(index, 1)
       },
     })
   }
@@ -128,36 +126,21 @@ export class YouTube {
 
   private async exportSubscriptions(): Promise<Subscriptions> {
     const remoteSubscriptions = await this.api.listSubscriptions()
-    const channelIds = remoteSubscriptions.map(entry => {
-      const channelId = entry.snippet?.resourceId?.channelId
-      typia.assertGuard<string>(channelId)
-      return channelId
-    })
+    const channelIds = remoteSubscriptions.map(entry => typia.assert<string>(entry.snippet?.resourceId?.channelId))
     return new Set(channelIds)
   }
 
   private async exportPlaylists(): Promise<Playlists> {
     const remotePlaylists = await this.api.listPlaylists()
-    const validatedPlaylists = remotePlaylists.map(entry => {
-      const validated = {
-        playlistId: entry.id,
-        playlistName: entry.snippet?.title,
-      }
-      typia.assertGuard<{ playlistId: string; playlistName: string }>(validated)
-      return validated
+    const playlists = remotePlaylists.map(entry => ({
+      id: typia.assert<string>(entry.id),
+      name: typia.assert<string>(entry.snippet?.title),
+    }))
+    const entries = await compactMap(playlists, async ({ id, name }) => {
+      const playlistItems = await this.api.listPlaylistItems(id)
+      const videoIds = playlistItems.map(entry => typia.assert<string>(entry.snippet?.resourceId?.videoId))
+      return [name, videoIds] as const
     })
-    const playlistsEntries = await compactMap(
-      validatedPlaylists, //
-      async ({ playlistId, playlistName }) => {
-        const playlistItems = await this.api.listPlaylistItems(playlistId)
-        const videoIds = playlistItems.map(entry => {
-          const videoId = entry.snippet?.resourceId?.videoId
-          typia.assertGuard<string>(videoId)
-          return videoId
-        })
-        return [playlistName, videoIds] as const
-      },
-    )
-    return new Map(playlistsEntries)
+    return new Map(entries)
   }
 }
