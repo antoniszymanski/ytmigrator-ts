@@ -21,15 +21,8 @@ export interface UserData {
   playlists: Playlists
 }
 
-/**
- * @elem channel ID
- */
 export type Subscriptions = string[]
 
-/**
- * @key playlist title
- * @value video IDs
- */
 export interface Playlists {
   [key: string]: string[]
 }
