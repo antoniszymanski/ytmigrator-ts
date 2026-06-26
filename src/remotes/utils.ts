@@ -24,18 +24,15 @@ export async function synchronizeSubscriptions(params: {
   subscribe: (channelId: string) => MaybePromise<void>
   unsubscribe: (channelId: string) => MaybePromise<void>
 }) {
-  const a = Object.fromEntries(params.source.map(value => [value, undefined]))
-  const b = Object.fromEntries(params.target.map(value => [value, undefined]))
-  const differences = diff(a, b, { cyclesFix: false })
-  for (const difference of differences) {
-    if (typia.is<{ type: "CREATE"; path: [string] }>(difference)) {
-      await params.subscribe(difference.path[0])
-    } else if (typia.is<{ type: "REMOVE"; path: [string] }>(difference)) {
-      await params.unsubscribe(difference.path[0])
-    } else {
-      throw new Error("unreachable")
-    }
-  }
+  const sourceSet = new Set(params.source)
+  const targetSet = new Set(params.target)
+  const toUnsubscribe = sourceSet.difference(targetSet)
+  const toSubscribe = targetSet.difference(sourceSet)
+  const promises = []
+  promises.push(...toUnsubscribe.values().map(params.unsubscribe))
+  promises.push(...toSubscribe.values().map(params.subscribe))
+  // oxlint-disable-next-line typescript/await-thenable
+  await Promise.all(promises)
 }
 
 export async function synchronizePlaylists(params: {
