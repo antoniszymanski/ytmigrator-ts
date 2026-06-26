@@ -91,18 +91,18 @@ export class PipePipe {
         for (const [index, video] of videos.entries()) {
           this.insertPlaylistStreamJoin(playlistRowId, video.streamRowId, index)
         }
-        state[name] = { videos, playlistRowId }
+        state.set(name, { videos, playlistRowId })
       },
       deletePlaylist: (name: string) => {
         this.deletePlaylist(name)
-        delete state[name]
+        state.delete(name)
       },
       addVideo: async (playlistName: string, index: number, id: string) => {
         const streamRowId = await this.insertStream(id)
         if (streamRowId === undefined) {
           return
         }
-        const rawPlaylists = state[playlistName]
+        const rawPlaylists = state.get(playlistName)
         if (!rawPlaylists) {
           throw new Error("TODO")
         }
@@ -114,7 +114,7 @@ export class PipePipe {
         if (streamRowId === undefined) {
           return
         }
-        const rawPlaylists = state[playlistName]
+        const rawPlaylists = state.get(playlistName)
         if (!rawPlaylists) {
           throw new Error("TODO")
         }
@@ -122,7 +122,7 @@ export class PipePipe {
         rawPlaylists.videos[index] = { videoId: id, streamRowId }
       },
       removeVideo: (playlistName: string, index: number) => {
-        const videoIds = state[playlistName]?.videos
+        const videoIds = state.get(playlistName)?.videos
         if (!videoIds) {
           throw new Error("TODO")
         }
@@ -224,31 +224,30 @@ export class PipePipe {
     return simplifyPlaylists(rawPlaylists)
   }
 
-  private exportRawPlaylists() {
-    const rawPlaylists: RawPlaylists = {}
-    for (const playlist of this.db.query("SELECT uid, name FROM playlists")) {
-      typia.assertGuard<{ uid: number; name: string }>(playlist)
-      const videos = this.db
-        .query("SELECT stream_id FROM playlist_stream_join WHERE playlist_id = ? ORDER BY join_index")
-        .all(playlist.uid)
-        .map(row => {
-          typia.assertGuard<{ stream_id: number }>(row)
-          return row.stream_id
-        })
-        .map(uid => {
-          const row = this.db.query("SELECT url FROM streams WHERE uid = ?").get(uid)
-          typia.assertGuard<{ url: string }>(row)
-          return {
-            videoId: videoId(row.url),
-            streamRowId: uid,
-          }
-        })
-      rawPlaylists[playlist.name] = {
-        videos,
-        playlistRowId: playlist.uid,
-      }
-    }
-    return rawPlaylists
+  private exportRawPlaylists(): RawPlaylists {
+    const entries = this.db
+      .query("SELECT uid, name FROM playlists")
+      .all()
+      .map(row => {
+        typia.assertGuard<{ uid: number; name: string }>(row)
+        const videos = this.db
+          .query("SELECT stream_id FROM playlist_stream_join WHERE playlist_id = ? ORDER BY join_index")
+          .all(row.uid)
+          .map(row => {
+            typia.assertGuard<{ stream_id: number }>(row)
+            return row.stream_id
+          })
+          .map(uid => {
+            const row = this.db.query("SELECT url FROM streams WHERE uid = ?").get(uid)
+            typia.assertGuard<{ url: string }>(row)
+            return {
+              videoId: videoId(row.url),
+              streamRowId: uid,
+            }
+          })
+        return [row.name, { videos, playlistRowId: row.uid }] as const
+      })
+    return new Map(entries)
   }
 }
 
@@ -275,20 +274,20 @@ function videoId(videoUrl: string) {
 /**
  * @key playlist title
  */
-interface RawPlaylists {
-  [key: string]: {
+type RawPlaylists = Map<
+  string,
+  {
     videos: {
       videoId: string
       streamRowId: number
     }[]
     playlistRowId: number
   }
-}
+>
 
 function simplifyPlaylists(rawPlaylists: RawPlaylists): Playlists {
-  return new Map(
-    Object.entries(rawPlaylists).map(
-      ([playlistTitle, playlist]) => [playlistTitle, playlist.videos.map(video => video.videoId)] as const,
-    ),
-  )
+  const entries = rawPlaylists
+    .entries()
+    .map(([playlistTitle, playlist]) => [playlistTitle, playlist.videos.map(video => video.videoId)] as const)
+  return new Map(entries)
 }
