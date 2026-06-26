@@ -24,7 +24,7 @@ import { FreeTube } from "./remotes/freetube"
 import { PipePipe } from "./remotes/pipepipe"
 import { YouTube } from "./remotes/youtube"
 
-export const REMOTES = <const>{
+export const REMOTES = {
   file: {
     remote: File,
     options: (type: RemoteType) => {
@@ -80,7 +80,7 @@ export const REMOTES = <const>{
       })
     },
   },
-}
+} as const
 
 type RemoteType = "Source" | "Destination"
 export type RemoteName = keyof typeof REMOTES
