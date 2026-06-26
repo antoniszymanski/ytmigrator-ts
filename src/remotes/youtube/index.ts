@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MPL-2.0
 
 import typia from "typia"
-import type { Playlists, Subscriptions, UserData } from ".."
+import { UserData, type Playlists, type Subscriptions } from ".."
 import { compactMap, synchronizePlaylists, synchronizeSubscriptions } from "../utils"
 import { YouTubeApi } from "./api"
 
@@ -29,7 +29,7 @@ export class YouTube {
       const subscriptionId = typia.assert<string>(subscription.id)
       subscriptionIdsByChannelId.set(channelId, subscriptionId)
     }
-    const remoteChannelIds = subscriptionIdsByChannelId.keys().toArray()
+    const remoteChannelIds = new Set(subscriptionIdsByChannelId.keys())
     await synchronizeSubscriptions({
       source: remoteChannelIds,
       target: subscriptions,
@@ -59,12 +59,14 @@ export class YouTube {
         ]
       }),
     )
-    const remotePlaylists: Playlists = {}
-    for (const [playlistTitle, { playlistItems }] of state) {
-      remotePlaylists[playlistTitle] = playlistItems.map(entry =>
-        typia.assert<string>(entry.snippet?.resourceId?.videoId),
-      )
-    }
+    const remotePlaylists = new Map(
+      state.entries().map(([playlistTitle, { playlistItems }]) => {
+        return [
+          playlistTitle,
+          playlistItems.map(entry => typia.assert<string>(entry.snippet?.resourceId?.videoId)),
+        ] as const
+      }),
+    )
     await synchronizePlaylists({
       source: remotePlaylists,
       target: playlists,
@@ -121,19 +123,21 @@ export class YouTube {
 
   async export(): Promise<UserData> {
     const [subscriptions, playlists] = await Promise.all([this.exportSubscriptions(), this.exportPlaylists()])
-    return { subscriptions, playlists }
+    return new UserData(subscriptions, playlists)
   }
 
   private async exportSubscriptions(): Promise<Subscriptions> {
-    return (await this.api.listSubscriptions()).map(entry => {
-      const channelId = entry.snippet?.resourceId?.channelId
-      typia.assertGuard<string>(channelId)
-      return channelId
-    })
+    return new Set(
+      (await this.api.listSubscriptions()).map(entry => {
+        const channelId = entry.snippet?.resourceId?.channelId
+        typia.assertGuard<string>(channelId)
+        return channelId
+      }),
+    )
   }
 
   private async exportPlaylists(): Promise<Playlists> {
-    return Object.fromEntries(
+    return new Map(
       await compactMap(
         (await this.api.listPlaylists()).map(entry => {
           const validated = {

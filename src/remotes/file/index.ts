@@ -1,8 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Antoni Szymański
 // SPDX-License-Identifier: MPL-2.0
 
-import typia from "typia"
-import type { UserData } from ".."
+import { UserData } from ".."
 
 export class File {
   private readonly file
@@ -15,37 +14,30 @@ export class File {
   }
 
   async import(data: UserData) {
-    let stringify
+    let text
     switch (this.format) {
       case "json":
-        stringify = JSON.stringify
+        text = data.toJSON(this.space)
         break
       case "json5":
-        stringify = Bun.JSON5.stringify
+        text = data.toJSON5(this.space)
         break
       case "yaml":
-        stringify = Bun.YAML.stringify
+        text = data.toYAML(this.space)
         break
     }
-    await this.file.write(stringify(data, undefined, this.space) as string)
+    await this.file.write(text)
   }
 
   async export() {
     const text = await this.file.text()
-    let data
     switch (this.format) {
       case "json":
-        data = JSON.parse(text)
-        break
+        return UserData.fromJSON(text)
       case "json5":
-        data = Bun.JSON5.parse(text)
-        break
+        return UserData.fromJSON5(text)
       case "yaml":
-        data = Bun.YAML.parse(text)
-        break
+        return UserData.fromYAML(text)
     }
-    typia.assertGuardEquals<UserData>(data)
-    data.subscriptions = [...new Set(data.subscriptions)]
-    return data
   }
 }

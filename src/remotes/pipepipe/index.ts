@@ -7,7 +7,7 @@ import { tmpdir } from "node:os"
 import typia from "typia"
 import { LiveVideo } from "youtubei"
 import * as zip from "zip-lib"
-import type { Playlists, Subscriptions, UserData } from ".."
+import { UserData, type Playlists, type Subscriptions } from ".."
 import { getVideoAuthor, type Youtubei } from "../../Youtubei"
 import { compactMap, synchronizePlaylists, synchronizeSubscriptions } from "../utils"
 
@@ -205,20 +205,18 @@ export class PipePipe {
   }
 
   export(): UserData {
-    return {
-      subscriptions: this.exportSubscriptions(),
-      playlists: this.exportPlaylists(),
-    }
+    return new UserData(this.exportSubscriptions(), this.exportPlaylists())
   }
 
   private exportSubscriptions(): Subscriptions {
-    return this.db
+    const channelIds = this.db
       .query("SELECT url FROM subscriptions")
       .all()
       .map(row => {
         typia.assertGuard<{ url: string }>(row)
         return channelId(row.url)
       })
+    return new Set(channelIds)
   }
 
   private exportPlaylists() {
@@ -287,10 +285,10 @@ interface RawPlaylists {
   }
 }
 
-function simplifyPlaylists(rawPlaylists: RawPlaylists) {
-  const playlists: Playlists = {}
-  for (const [playlistTitle, playlist] of Object.entries(rawPlaylists)) {
-    playlists[playlistTitle] = playlist.videos.map(video => video.videoId)
-  }
-  return playlists
+function simplifyPlaylists(rawPlaylists: RawPlaylists): Playlists {
+  return new Map(
+    Object.entries(rawPlaylists).map(
+      ([playlistTitle, playlist]) => [playlistTitle, playlist.videos.map(video => video.videoId)] as const,
+    ),
+  )
 }

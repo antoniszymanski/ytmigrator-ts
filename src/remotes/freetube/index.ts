@@ -50,7 +50,7 @@ export class FreeTube {
   }
 
   private async importPlaylists(playlists: Playlists) {
-    const data = (await compactMap(Object.entries(playlists), this.processPlaylistEntry, Date.now()))
+    const data = (await compactMap(playlists, this.processPlaylistEntry, Date.now()))
       .map(elem => typia.json.stringify(elem))
       .join("\n")
     await Bun.write(`${this.dir}/playlists.db`, `${data}\n`)

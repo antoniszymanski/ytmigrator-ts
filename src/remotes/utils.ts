@@ -8,29 +8,32 @@ import typia from "typia"
 import type { Playlists, Subscriptions } from "."
 
 export async function compactMap<T1, T2 extends unknown[], T3>(
-  array: T1[],
+  iterable: Iterable<T1>,
   transform: (value: T1, ...args: T2) => Promise<T3 | undefined>,
   ...args: T2
 ) {
-  const promises = array.map(async value => transform(value, ...args))
+  const promises = Iterator.from(iterable).map(async value => transform(value, ...args))
   const results = await Promise.all(promises)
   const compacted = results.filter(value => value !== undefined)
   return compacted
 }
 
-export async function synchronizeSubscriptions(params: {
+export async function synchronizeSubscriptions({
+  source,
+  target,
+  subscribe,
+  unsubscribe,
+}: {
   source: Subscriptions
   target: Subscriptions
   subscribe: (channelId: string) => MaybePromise<void>
   unsubscribe: (channelId: string) => MaybePromise<void>
 }) {
-  const sourceSet = new Set(params.source)
-  const targetSet = new Set(params.target)
-  const toUnsubscribe = sourceSet.difference(targetSet)
-  const toSubscribe = targetSet.difference(sourceSet)
+  const toUnsubscribe = source.difference(target)
+  const toSubscribe = target.difference(source)
   const promises = []
-  promises.push(...toUnsubscribe.values().map(params.unsubscribe))
-  promises.push(...toSubscribe.values().map(params.subscribe))
+  promises.push(...toUnsubscribe.values().map(unsubscribe))
+  promises.push(...toSubscribe.values().map(subscribe))
   // oxlint-disable-next-line typescript/await-thenable
   await Promise.all(promises)
 }
@@ -44,7 +47,9 @@ export async function synchronizePlaylists(params: {
   updateVideo: (playlistName: string, index: number, id: string) => MaybePromise<void>
   removeVideo: (playlistName: string, index: number) => MaybePromise<void>
 }) {
-  const differences = diff(params.source, params.target, { cyclesFix: false })
+  const a = Object.fromEntries(params.source.entries())
+  const b = Object.fromEntries(params.target.entries())
+  const differences = diff(a, b, { cyclesFix: false })
   for (const difference of differences) {
     if (typia.is<{ type: "CREATE"; path: [string]; value: string[] }>(difference)) {
       await params.createPlaylist(difference.path[0], difference.value)
