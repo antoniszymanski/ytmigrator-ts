@@ -27,7 +27,7 @@ export class YouTubeApi {
 
   /** https://developers.google.com/youtube/v3/docs/subscriptions/insert */
   async insertSubscription(channelId: string) {
-    await this.service.subscriptions.insert({
+    const resp = await this.service.subscriptions.insert({
       part: ["snippet"],
       requestBody: {
         snippet: {
@@ -38,6 +38,7 @@ export class YouTubeApi {
         },
       },
     })
+    return resp.data
   }
 
   /** https://developers.google.com/youtube/v3/docs/subscriptions/delete */
@@ -110,7 +111,7 @@ export class YouTubeApi {
 
   /** https://developers.google.com/youtube/v3/docs/playlistItems/update */
   async updatePlaylistItem(playlistId: string, itemId: string, videoId: string) {
-    return this.service.playlistItems.update({
+    const resp = await this.service.playlistItems.update({
       part: ["id", "snippet"],
       requestBody: {
         id: itemId,
@@ -123,6 +124,7 @@ export class YouTubeApi {
         },
       },
     })
+    return resp.data
   }
 
   /** https://developers.google.com/youtube/v3/docs/playlistItems/delete */

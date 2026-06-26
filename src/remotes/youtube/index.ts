@@ -34,7 +34,9 @@ export class YouTube {
     await synchronizeSubscriptions({
       source,
       target: subscriptions,
-      subscribe: this.api.insertSubscription.bind(this),
+      subscribe: async (channelId: string) => {
+        await this.api.insertSubscription(channelId)
+      },
       unsubscribe: async (channelId: string) => {
         const subscriptionId = state.get(channelId)
         if (subscriptionId === undefined) {
