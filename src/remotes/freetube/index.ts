@@ -26,14 +26,15 @@ export class FreeTube {
   private async importSubscriptions(subscriptions: Subscriptions) {
     const bgColor = colors.getRandomColor()
     const textColor = colors.calculateColorLuminance(bgColor)
-    const data = typia.json.stringify<models.Subscriptions>({
+    const subscriptionsData: models.Subscriptions = {
       _id: "allChannels",
       name: "Profile.All Channels",
       bgColor,
       textColor,
       subscriptions: await compactMap(subscriptions, this.processChannelEntry),
-    })
-    await Bun.write(`${this.dir}/subscriptions.db`, `${data}\n`)
+    }
+    const text = typia.json.stringify(subscriptionsData).concat("\n")
+    await Bun.write(`${this.dir}/subscriptions.db`, text)
   }
 
   private readonly processChannelEntry = async (channelId: string) => {
@@ -50,10 +51,12 @@ export class FreeTube {
   }
 
   private async importPlaylists(playlists: Playlists) {
-    const data = (await compactMap(playlists, this.processPlaylistEntry, Date.now()))
+    const playlistEntries = await compactMap(playlists, this.processPlaylistEntry, Date.now())
+    const text = playlistEntries
       .map(elem => typia.json.stringify(elem))
       .join("\n")
-    await Bun.write(`${this.dir}/playlists.db`, `${data}\n`)
+      .concat("\n")
+    await Bun.write(`${this.dir}/playlists.db`, text)
   }
 
   private readonly processPlaylistEntry = async (

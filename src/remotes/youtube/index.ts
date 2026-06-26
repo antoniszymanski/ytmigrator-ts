@@ -127,35 +127,37 @@ export class YouTube {
   }
 
   private async exportSubscriptions(): Promise<Subscriptions> {
-    return new Set(
-      (await this.api.listSubscriptions()).map(entry => {
-        const channelId = entry.snippet?.resourceId?.channelId
-        typia.assertGuard<string>(channelId)
-        return channelId
-      }),
-    )
+    const remoteSubscriptions = await this.api.listSubscriptions()
+    const channelIds = remoteSubscriptions.map(entry => {
+      const channelId = entry.snippet?.resourceId?.channelId
+      typia.assertGuard<string>(channelId)
+      return channelId
+    })
+    return new Set(channelIds)
   }
 
   private async exportPlaylists(): Promise<Playlists> {
-    return new Map(
-      await compactMap(
-        (await this.api.listPlaylists()).map(entry => {
-          const validated = {
-            playlistId: entry.id,
-            playlistName: entry.snippet?.title,
-          }
-          typia.assertGuard<{ playlistId: string; playlistName: string }>(validated)
-          return validated
-        }),
-        async ({ playlistId, playlistName }) => {
-          const videoIds = (await this.api.listPlaylistItems(playlistId)).map(entry => {
-            const videoId = entry.snippet?.resourceId?.videoId
-            typia.assertGuard<string>(videoId)
-            return videoId
-          })
-          return [playlistName, videoIds]
-        },
-      ),
+    const remotePlaylists = await this.api.listPlaylists()
+    const validatedPlaylists = remotePlaylists.map(entry => {
+      const validated = {
+        playlistId: entry.id,
+        playlistName: entry.snippet?.title,
+      }
+      typia.assertGuard<{ playlistId: string; playlistName: string }>(validated)
+      return validated
+    })
+    const playlistsEntries = await compactMap(
+      validatedPlaylists, //
+      async ({ playlistId, playlistName }) => {
+        const playlistItems = await this.api.listPlaylistItems(playlistId)
+        const videoIds = playlistItems.map(entry => {
+          const videoId = entry.snippet?.resourceId?.videoId
+          typia.assertGuard<string>(videoId)
+          return videoId
+        })
+        return [playlistName, videoIds] as const
+      },
     )
+    return new Map(playlistsEntries)
   }
 }
