@@ -37,8 +37,8 @@ export class UserData {
 
   private static fromES5(input: any) {
     typia.assertGuardEquals<{
-      subscriptions: Array<string & tags.UniqueItems>
-      playlists: Record<string, Array<string & tags.UniqueItems>>
+      subscriptions: Array<string> & tags.UniqueItems
+      playlists: Record<string, Array<string> & tags.UniqueItems>
     }>(input)
     return new this(new Set(input.subscriptions), new Map(Object.entries(input.playlists)))
   }
