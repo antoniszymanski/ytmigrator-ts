@@ -20,7 +20,7 @@ export interface Closer {
 export class UserData {
   constructor(
     public subscriptions: Set<string>,
-    public playlists: Map<string, Array<string & tags.UniqueItems>>,
+    public playlists: Map<string, Array<string> & tags.UniqueItems>,
   ) {}
 
   static fromJSON(text: string) {
