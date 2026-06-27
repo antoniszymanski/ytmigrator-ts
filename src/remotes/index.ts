@@ -20,7 +20,7 @@ export interface Closer {
 export class UserData {
   constructor(
     public subscriptions: Set<string>,
-    public playlists: Map<string, Array<string> & tags.UniqueItems>,
+    public playlists: Map<string, string[] & tags.UniqueItems>,
   ) {}
 
   static fromJSON(text: string) {
@@ -37,8 +37,8 @@ export class UserData {
 
   private static fromES5(input: any) {
     typia.assertGuardEquals<{
-      subscriptions: Array<string> & tags.UniqueItems
-      playlists: Record<string, Array<string> & tags.UniqueItems>
+      subscriptions: string[] & tags.UniqueItems
+      playlists: Record<string, string[] & tags.UniqueItems>
     }>(input)
     return new this(new Set(input.subscriptions), new Map(Object.entries(input.playlists)))
   }
