@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MPL-2.0
 
 import { youtube_v3 } from "@googleapis/youtube"
+import typia from "typia"
 import { getAuth } from "./auth"
 
 export class YouTubeApi {
@@ -74,6 +75,19 @@ export class YouTubeApi {
     return resp.data
   }
 
+  async renamePlaylist(playlistId: string, newTitle: string) {
+    const resp = await this.service.playlists.update({
+      part: ["id", "snippet"],
+      requestBody: {
+        id: playlistId,
+        snippet: {
+          title: newTitle,
+        },
+      },
+    })
+    return resp.data
+  }
+
   /** https://developers.google.com/youtube/v3/docs/playlists/delete */
   async deletePlaylist(playlistId: string) {
     await this.service.playlists.delete({ id: playlistId })
@@ -93,38 +107,42 @@ export class YouTubeApi {
 
   /** https://developers.google.com/youtube/v3/docs/playlistItems/insert */
   async insertPlaylistItem(playlistId: string, videoId: string, position: number) {
-    const resp = await this.service.playlistItems.insert({
-      part: ["snippet"],
-      requestBody: {
-        snippet: {
-          playlistId,
-          position,
-          resourceId: {
-            kind: "youtube#video",
-            videoId,
+    try {
+      const resp = await this.service.playlistItems.insert({
+        part: ["snippet"],
+        requestBody: {
+          snippet: {
+            playlistId,
+            position,
+            resourceId: {
+              kind: "youtube#video",
+              videoId,
+            },
           },
         },
-      },
-    })
-    return resp.data
-  }
-
-  /** https://developers.google.com/youtube/v3/docs/playlistItems/update */
-  async updatePlaylistItem(playlistId: string, itemId: string, videoId: string) {
-    const resp = await this.service.playlistItems.update({
-      part: ["id", "snippet"],
-      requestBody: {
-        id: itemId,
-        snippet: {
-          playlistId,
-          resourceId: {
-            kind: "youtube#video",
-            videoId,
-          },
-        },
-      },
-    })
-    return resp.data
+      })
+      return resp.data
+    } catch (e) {
+      if (
+        !typia.is<{
+          cause: {
+            message: "Video not found."
+            code: 404
+            status: "Not Found"
+            errors: [
+              {
+                message: "Video not found."
+                domain: "youtube.playlistItem"
+                reason: "videoNotFound"
+              },
+            ]
+          }
+        }>(e)
+      ) {
+        throw e
+      }
+      return undefined
+    }
   }
 
   /** https://developers.google.com/youtube/v3/docs/playlistItems/delete */

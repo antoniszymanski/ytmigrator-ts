@@ -8,8 +8,9 @@ import typia from "typia"
 import { LiveVideo } from "youtubei"
 import * as zip from "zip-lib"
 import { UserData, type Playlists, type Subscriptions } from ".."
+import { syncSubscriptions } from "../../sync"
 import { getVideoAuthor, type Youtubei } from "../../Youtubei"
-import { compactMap, synchronizeSubscriptions } from "../utils"
+import { compactMap } from "../utils"
 
 export class PipePipe {
   private constructor(
@@ -50,7 +51,7 @@ export class PipePipe {
   }
 
   private async importSubscriptions(subscriptions: Subscriptions) {
-    await synchronizeSubscriptions({
+    await syncSubscriptions({
       source: this.exportSubscriptions(),
       target: subscriptions,
       subscribe: async (channelId: string) => {
