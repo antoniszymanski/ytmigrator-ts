@@ -75,6 +75,7 @@ export class YouTubeApi {
     return resp.data
   }
 
+  /** https://developers.google.com/youtube/v3/docs/playlists/update */
   async renamePlaylist(playlistId: string, newTitle: string) {
     const resp = await this.service.playlists.update({
       part: ["id", "snippet"],
