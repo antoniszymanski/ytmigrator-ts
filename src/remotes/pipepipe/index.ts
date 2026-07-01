@@ -9,7 +9,7 @@ import { LiveVideo } from "youtubei"
 import * as zip from "zip-lib"
 import { UserData, type Playlists, type Subscriptions } from ".."
 import { getVideoAuthor, type Youtubei } from "../../Youtubei"
-import { compactMap, synchronizePlaylists, synchronizeSubscriptions } from "../utils"
+import { compactMap, synchronizeSubscriptions } from "../utils"
 
 export class PipePipe {
   private constructor(
@@ -72,68 +72,48 @@ export class PipePipe {
   }
 
   private async importPlaylists(playlists: Playlists) {
-    const state = this.exportRawPlaylists()
-    await synchronizePlaylists({
-      source: simplifyPlaylists(state),
-      target: playlists,
-      createPlaylist: async (name: string, videoIds: string[]) => {
-        const videos = await compactMap(videoIds, async videoId => {
-          const streamRowId = await this.insertStream(videoId)
-          if (streamRowId !== undefined) {
-            return { id: videoId, streamRowId }
-          }
-        })
-        if (!videos[0]) {
-          throw new Error("TODO")
+    this.deletePlaylists()
+    await compactMap(
+      playlists, //
+      async ([playlistName, videoIds]) => {
+        const videos = await compactMap(
+          videoIds, //
+          async videoId => {
+            const streamRowId = await this.insertStream(videoId)
+            if (streamRowId !== undefined) {
+              return { id: videoId, streamRowId }
+            }
+          },
+        )
+        let thumbnailUrl = null
+        if (videos[0]) {
+          const firstVideo = await this.youtubei.getVideo(videos[0].id)
+          thumbnailUrl = firstVideo?.thumbnails.best ?? null
         }
-        const firstVideo = await this.youtubei.getVideo(videos[0].id)
-        const rowId = this.insertPlaylist(name, firstVideo?.thumbnails.best ?? null)
+        const playlistRowId = this.insertPlaylist(playlistName, thumbnailUrl)
         for (const [index, video] of videos.entries()) {
-          this.insertPlaylistStreamJoin(rowId, video.streamRowId, index)
+          this.insertPlaylistStreamJoin(playlistRowId, video.streamRowId, index)
         }
-        state.set(name, { videos, rowId })
       },
-      deletePlaylist: (name: string) => {
-        this.deletePlaylist(name)
-        state.delete(name)
-      },
-      addVideo: async (playlistName: string, index: number, id: string) => {
-        const streamRowId = await this.insertStream(id)
-        if (streamRowId === undefined) {
-          return
-        }
-        const playlist = state.get(playlistName)
-        if (!playlist) {
-          throw new Error("TODO")
-        }
-        this.insertPlaylistStreamJoin(playlist.rowId, streamRowId, index)
-        playlist.videos[index] = { id, streamRowId }
-      },
-      updateVideo: async (playlistName: string, index: number, id: string) => {
-        const streamRowId = await this.insertStream(id)
-        if (streamRowId === undefined) {
-          return
-        }
-        const playlist = state.get(playlistName)
-        if (!playlist) {
-          throw new Error("TODO")
-        }
-        this.updatePlaylistStreamJoin(playlist.rowId, streamRowId, index)
-        playlist.videos[index] = { id, streamRowId }
-      },
-      removeVideo: (playlistName: string, index: number) => {
-        const videos = state.get(playlistName)?.videos
-        if (!videos) {
-          throw new Error("TODO")
-        }
-        const videoId = videos[index]?.id
-        if (videoId === undefined) {
-          throw new Error("TODO")
-        }
-        this.deleteStream(videoId)
-        videos.splice(index, 1)
-      },
-    })
+    )
+  }
+
+  private deletePlaylists() {
+    this.db.query("DELETE FROM playlists").run()
+  }
+
+  private insertPlaylist(name: string, thumbnailUrl: string | null) {
+    const id = this.db
+      .query("INSERT INTO playlists (name, thumbnail_url, display_index) VALUES (?, ?, -1)")
+      .run(name, thumbnailUrl).lastInsertRowid
+    typia.assertGuard<number>(id)
+    return id
+  }
+
+  private insertPlaylistStreamJoin(playlistRowId: number, streamRowId: number, joinIndex: number) {
+    this.db
+      .query("INSERT INTO playlist_stream_join (playlist_id, stream_id, join_index) VALUES (?, ?, ?)")
+      .run(playlistRowId, streamRowId, joinIndex)
   }
 
   private async insertStream(videoId: string) {
@@ -176,34 +156,6 @@ export class PipePipe {
     return row?.uid
   }
 
-  private deletePlaylist(name: string) {
-    this.db.query("DELETE FROM playlists WHERE name = ?").run(name)
-  }
-
-  private insertPlaylist(name: string, thumbnailUrl: string | null) {
-    const id = this.db
-      .query("INSERT INTO playlists (name, thumbnail_url, display_index) VALUES (?, ?, -1)")
-      .run(name, thumbnailUrl).lastInsertRowid
-    typia.assertGuard<number>(id)
-    return id
-  }
-
-  private insertPlaylistStreamJoin(playlistRowId: number, streamRowId: number, joinIndex: number) {
-    this.db
-      .query("INSERT INTO playlist_stream_join (playlist_id, stream_id, join_index) VALUES (?, ?, ?)")
-      .run(playlistRowId, streamRowId, joinIndex)
-  }
-
-  private deleteStream(videoId: string) {
-    this.db.query("DELETE FROM streams WHERE url = ?").run(videoUrl(videoId))
-  }
-
-  private updatePlaylistStreamJoin(playlistRowId: number, streamRowId: number, joinIndex: number) {
-    this.db
-      .query("UPDATE playlist_stream_join SET stream_id = ? WHERE playlist_id = ? AND join_index = ?")
-      .run(streamRowId, playlistRowId, joinIndex)
-  }
-
   export(): UserData {
     return new UserData(this.exportSubscriptions(), this.exportPlaylists())
   }
@@ -221,10 +173,13 @@ export class PipePipe {
 
   private exportPlaylists() {
     const rawPlaylists = this.exportRawPlaylists()
-    return simplifyPlaylists(rawPlaylists)
+    const entries = rawPlaylists
+      .entries()
+      .map(([name, playlist]) => [name, playlist.videos.map(video => video.id)] as const)
+    return new Map(entries)
   }
 
-  private exportRawPlaylists(): RawPlaylists {
+  private exportRawPlaylists() {
     const entries = this.db
       .query("SELECT uid, name FROM playlists")
       .all()
@@ -266,22 +221,4 @@ function videoId(videoUrl: string) {
     throw new Error("TODO")
   }
   return videoUrl.slice(prefix.length)
-}
-
-type RawPlaylists = Map<
-  string,
-  {
-    rowId: number
-    videos: {
-      id: string
-      streamRowId: number
-    }[]
-  }
->
-
-function simplifyPlaylists(rawPlaylists: RawPlaylists): Playlists {
-  const entries = rawPlaylists
-    .entries()
-    .map(([name, playlist]) => [name, playlist.videos.map(video => video.id)] as const)
-  return new Map(entries)
 }
