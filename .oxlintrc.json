@@ -4,6 +4,7 @@
     "typeAware": true
   },
   "rules": {
+    "no-ternary": "warn",
     "object-shorthand": "warn",
     "typescript/no-inferrable-types": "warn",
     "typescript/no-non-null-asserted-optional-chain": "allow",
