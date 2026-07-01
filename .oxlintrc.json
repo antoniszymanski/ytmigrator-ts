@@ -6,7 +6,6 @@
   "rules": {
     "object-shorthand": "warn",
     "typescript/no-inferrable-types": "warn",
-    "typescript/no-non-null-assertion": "warn",
     "typescript/prefer-readonly": "warn",
     "typescript/promise-function-async": "warn",
     "typescript/return-await": "warn",
