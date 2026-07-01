@@ -124,25 +124,24 @@ export class YouTubeApi {
       })
       return resp.data
     } catch (e) {
-      if (
-        !typia.is<{
-          cause: {
-            message: "Video not found."
-            code: 404
-            status: "Not Found"
-            errors: [
-              {
-                message: "Video not found."
-                domain: "youtube.playlistItem"
-                reason: "videoNotFound"
-              },
-            ]
-          }
-        }>(e)
-      ) {
-        throw e
+      type VideoNotFoundError = {
+        cause: {
+          message: "Video not found."
+          code: 404
+          status: "Not Found"
+          errors: [
+            {
+              message: "Video not found."
+              domain: "youtube.playlistItem"
+              reason: "videoNotFound"
+            },
+          ]
+        }
       }
-      return undefined
+      if (typia.is<VideoNotFoundError>(e)) {
+        return undefined
+      }
+      throw e
     }
   }
 
