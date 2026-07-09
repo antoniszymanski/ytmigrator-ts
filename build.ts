@@ -19,7 +19,7 @@ import {
   withDefault,
 } from "@optique/core"
 import { path, run } from "@optique/run"
-import UnpluginTypia from "@typia/unplugin/bun"
+import ttsc from "@ttsc/unplugin/bun"
 import { $ } from "bun"
 import typia, { type ILlmSchema } from "typia"
 
@@ -98,7 +98,7 @@ type Cli<Action extends (typeof cli)["action"]> = typeof cli & { readonly action
 const commonConfig: Bun.BuildConfig = {
   entrypoints: [`${import.meta.dir}/src/index.ts`],
   target: "bun",
-  plugins: [UnpluginTypia({ cache: true, log: false })],
+  plugins: [ttsc()],
   sourcemap: "linked",
   minify: {
     whitespace: true,
