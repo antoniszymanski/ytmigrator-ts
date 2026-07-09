@@ -1,7 +1,7 @@
 {
   "extends": ["@tsconfig/bun/tsconfig.json", "@tsconfig/strictest/tsconfig.json"],
   "compilerOptions": {
-    "types": ["bun", "node"],
+    "types": ["bun"],
     "exactOptionalPropertyTypes": false,
     "noImplicitReturns": false,
     "paths": { "youtubei": ["./node_modules/youtubei/src"] }
