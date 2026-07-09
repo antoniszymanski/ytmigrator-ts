@@ -5,8 +5,7 @@
   "module": "src/index.ts",
   "scripts": {
     "check": "oxlint --fix",
-    "format": "oxfmt",
-    "typecheck": "tsc-silent -p tsconfig.json --suppress @node_modules/youtubei"
+    "format": "oxfmt"
   },
   "dependencies": {
     "@googleapis/youtube": "^33.0.0",
@@ -29,7 +28,6 @@
     "oxfmt": "^0.58.0",
     "oxlint": "^1.70.0",
     "oxlint-tsgolint": "^0.24.0",
-    "tsc-silent": "^1.2.2",
     "ttsc": "^0.17.3",
     "typescript": "^7.0.0"
   },
