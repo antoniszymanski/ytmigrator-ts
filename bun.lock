@@ -16,6 +16,7 @@
         "zip-lib": "^1.4.0",
       },
       "devDependencies": {
+        "@optique/discover": "^1.1.1",
         "@optique/man": "^1.1.1",
         "@tsconfig/bun": "^1.0.10",
         "@tsconfig/strictest": "^2.0.8",
@@ -50,6 +51,8 @@
     "@jridgewell/trace-mapping": ["@jridgewell/trace-mapping@0.3.31", "", { "dependencies": { "@jridgewell/resolve-uri": "^3.1.0", "@jridgewell/sourcemap-codec": "^1.4.14" } }, "sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw=="],
 
     "@optique/core": ["@optique/core@1.1.1", "", {}, "sha512-tbZLdH5wEnh8IRG8KTmWPZCKHLmD4bXigoPdzoSUVi+V46qZTNEaTdqtR7EuEwhbPI0KQjLSYRZCxFTdr9OZkA=="],
+
+    "@optique/discover": ["@optique/discover@1.1.1", "", { "dependencies": { "@optique/core": "1.1.1", "@optique/run": "1.1.1" } }, "sha512-CI0She5Xwi45m3CD7PIAC9kdAGvbTXacaaBpbx2QdukULnJHwZHb81Qr1Rb5GXQySGAFQar/YapgNWwOmL/ESA=="],
 
     "@optique/man": ["@optique/man@1.1.1", "", { "dependencies": { "@optique/core": "1.1.1", "@optique/run": "1.1.1" }, "bin": { "optique-man": "./dist/cli.js" } }, "sha512-FHlMqqbOz1G7JbXahzpvKv0hWJ7BnXQFVDOp2kZ1UyY37uJaDpFSGpRGi9X6IhY+Dv8KbyhIneUxw9wgt313vA=="],
 

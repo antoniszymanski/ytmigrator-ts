@@ -19,6 +19,7 @@
     "zip-lib": "^1.4.0"
   },
   "devDependencies": {
+    "@optique/discover": "^1.1.1",
     "@optique/man": "^1.1.1",
     "@tsconfig/bun": "^1.0.10",
     "@tsconfig/strictest": "^2.0.8",
