@@ -39,15 +39,15 @@ export function nextPlaylistChange(source: Playlists, target: Playlists): Playli
       if (sourceName === targetName) {
         continue
       }
-      const similarity = calculateSimilarity(sourceVideos, targetVideos)
-      if (similarity === 0) {
+      const distance = calculateEditDistance(sourceVideos, targetVideos)
+      if (distance === 0) {
         return { type: "RENAME_PLAYLIST", oldName: sourceName, newName: targetName }
       }
-      if (!bestMatch || similarity < bestMatch.similarity) {
-        bestMatch = { name: targetName, similarity, targetVideos }
+      if (!bestMatch || distance < bestMatch.distance) {
+        bestMatch = { name: targetName, distance, targetVideos }
       }
     }
-    if (bestMatch && bestMatch.similarity < 1) {
+    if (bestMatch && bestMatch.distance < 1) {
       return { type: "RENAME_PLAYLIST", oldName: sourceName, newName: bestMatch.name }
     }
   }
@@ -78,7 +78,7 @@ export function nextPlaylistChange(source: Playlists, target: Playlists): Playli
   }
 }
 
-function calculateSimilarity(source: string[], target: string[]): number {
+function calculateEditDistance(source: string[], target: string[]): number {
   let changes = 0
   while (true) {
     const change = nextArrayChange(source, target)
