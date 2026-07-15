@@ -39,10 +39,10 @@ export function nextPlaylistChange(source: Playlists, target: Playlists): Playli
       if (sourceName === targetName) {
         continue
       }
-      if (deepEquals(sourceVideos, targetVideos, true)) {
+      const similarity = calculateSimilarity(sourceVideos, targetVideos)
+      if (similarity === 0) {
         return { type: "RENAME_PLAYLIST", oldName: sourceName, newName: targetName }
       }
-      const similarity = calculateSimilarity(sourceVideos, targetVideos)
       if (!bestMatch || similarity < bestMatch.similarity) {
         bestMatch = { name: targetName, similarity, targetVideos }
       }
