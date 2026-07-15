@@ -57,8 +57,8 @@ export class UserData {
 
   private toES5() {
     return {
-      subscriptions: this.subscriptions.values().toArray(),
-      playlists: Object.fromEntries(this.playlists.entries()),
+      subscriptions: [...this.subscriptions],
+      playlists: Object.fromEntries(this.playlists),
     }
   }
 }
