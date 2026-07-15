@@ -36,10 +36,7 @@ export class UserData {
   }
 
   private static fromES5(input: any) {
-    typia.assertGuardEquals<{
-      subscriptions: string[] & tags.UniqueItems
-      playlists: Record<string, string[] & tags.UniqueItems>
-    }>(input)
+    typia.assertGuardEquals<SerializedUserData>(input)
     return new this(new Set(input.subscriptions), new Map(Object.entries(input.playlists)))
   }
 
@@ -55,12 +52,17 @@ export class UserData {
     return YAML.stringify(this.toES5(), undefined, space)
   }
 
-  private toES5() {
+  private toES5(): SerializedUserData {
     return {
       subscriptions: [...this.subscriptions],
       playlists: Object.fromEntries(this.playlists),
     }
   }
+}
+
+interface SerializedUserData {
+  subscriptions: string[] & tags.UniqueItems
+  playlists: Record<string, string[] & tags.UniqueItems>
 }
 
 export type Subscriptions = InstanceType<typeof UserData>["subscriptions"]
