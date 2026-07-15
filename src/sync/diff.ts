@@ -43,7 +43,7 @@ export function nextPlaylistChange(source: Playlists, target: Playlists): Playli
         return { type: "RENAME_PLAYLIST", oldName: sourceName, newName: targetName }
       }
       const similarity = calculateSimilarity(sourceVideos, targetVideos)
-      if (bestMatch === undefined || similarity < bestMatch.similarity) {
+      if (!bestMatch || similarity < bestMatch.similarity) {
         bestMatch = { name: targetName, similarity, targetVideos }
       }
     }
