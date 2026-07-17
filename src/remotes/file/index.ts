@@ -5,39 +5,23 @@ import { UserData } from ".."
 
 export class File {
   private readonly file
+  private readonly format
   constructor(
     path: string,
-    private readonly format: "json" | "json5" | "yaml",
+    format: "json" | "json5" | "yaml",
     private readonly space?: string,
   ) {
     this.file = Bun.file(path)
+    this.format = format.toUpperCase() as Uppercase<typeof format>
   }
 
   async import(data: UserData) {
-    let text
-    switch (this.format) {
-      case "json":
-        text = data.toJSON(this.space)
-        break
-      case "json5":
-        text = data.toJSON5(this.space)
-        break
-      case "yaml":
-        text = data.toYAML(this.space)
-        break
-    }
+    const text = data[`to${this.format}`](this.space)
     await this.file.write(text)
   }
 
   async export() {
     const text = await this.file.text()
-    switch (this.format) {
-      case "json":
-        return UserData.fromJSON(text)
-      case "json5":
-        return UserData.fromJSON5(text)
-      case "yaml":
-        return UserData.fromYAML(text)
-    }
+    return UserData[`from${this.format}`](text)
   }
 }
