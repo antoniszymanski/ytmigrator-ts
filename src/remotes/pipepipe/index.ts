@@ -167,14 +167,6 @@ export class PipePipe {
   }
 
   private exportPlaylists() {
-    const rawPlaylists = this.exportRawPlaylists()
-    const entries = rawPlaylists
-      .entries()
-      .map(([name, playlist]) => [name, playlist.videos.map(video => video.id)] as const)
-    return new Map(entries)
-  }
-
-  private exportRawPlaylists() {
     const entries = this.db
       .query("SELECT uid, name FROM playlists")
       .all()
@@ -190,9 +182,9 @@ export class PipePipe {
           .map(uid => {
             const row = this.db.query("SELECT url FROM streams WHERE uid = ?").get(uid)
             typia.assertGuard<{ url: string }>(row)
-            return { id: videoId(row.url), streamRowId: uid }
+            return videoId(row.url)
           })
-        return [row.name, { videos, rowId: row.uid }] as const
+        return [row.name, videos] as const
       })
     return new Map(entries)
   }
