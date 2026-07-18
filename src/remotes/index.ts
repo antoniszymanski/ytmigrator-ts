@@ -19,8 +19,8 @@ export interface Closer {
 // TODO: rename
 export class UserData {
   constructor(
-    public subscriptions: Set<string>,
-    public playlists: Map<string, string[] & tags.UniqueItems>,
+    public subscriptions: Set<string & ChannelIdTag>,
+    public playlists: Map<string, (string & VideoIdTag)[] & tags.UniqueItems>,
   ) {}
 
   static fromJSON(text: string) {
@@ -60,9 +60,13 @@ export class UserData {
   }
 }
 
+type ChannelIdTag = tags.Pattern<"^UC[0-9A-Za-z_-]{21}[AQgw]$">
+
+type VideoIdTag = tags.Pattern<"^[0-9A-Za-z_-]{10}[048AEIMQUYcgkosw]$">
+
 interface SerializedUserData {
-  subscriptions: string[] & tags.UniqueItems
-  playlists: Record<string, string[] & tags.UniqueItems>
+  subscriptions: (string & ChannelIdTag)[] & tags.UniqueItems
+  playlists: Record<string, (string & VideoIdTag)[] & tags.UniqueItems>
 }
 
 export type Subscriptions = InstanceType<typeof UserData>["subscriptions"]
