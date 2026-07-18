@@ -190,22 +190,34 @@ export class PipePipe {
   }
 }
 
-const channelUrl = (channelId: string) => `https://www.youtube.com/channel/${channelId}`
+// https://webapps.stackexchange.com/a/101153
 
-function channelId(channelUrl: string) {
-  const prefix = "https://www.youtube.com/channel/"
-  if (!channelUrl.startsWith(prefix)) {
+function videoUrl(videoId: string) {
+  if (!/^[0-9A-Za-z_-]{10}[048AEIMQUYcgkosw]$/.test(videoId)) {
     throw new Error("TODO")
   }
-  return channelUrl.slice(prefix.length)
+  return `https://www.youtube.com/watch?v=${videoId}`
 }
 
-const videoUrl = (videoId: string) => `https://www.youtube.com/watch?v=${videoId}`
-
 function videoId(videoUrl: string) {
-  const prefix = "https://www.youtube.com/watch?v="
-  if (!videoUrl.startsWith(prefix)) {
+  const id = /^https:\/\/www\.youtube\.com\/watch\?v=([0-9A-Za-z_-]{10}[048AEIMQUYcgkosw])$/.exec(videoUrl)?.[1]
+  if (id === undefined) {
     throw new Error("TODO")
   }
-  return videoUrl.slice(prefix.length)
+  return id
+}
+
+function channelUrl(channelId: string) {
+  if (!/^UC[0-9A-Za-z_-]{21}[AQgw]$/.test(channelId)) {
+    throw new Error("TODO")
+  }
+  return `https://www.youtube.com/channel/${channelId}`
+}
+
+function channelId(channelUrl: string) {
+  const id = /^https:\/\/www\.youtube\.com\/channel\/(UC[0-9A-Za-z_-]{21}[AQgw])$/.exec(channelUrl)?.[1]
+  if (id === undefined) {
+    throw new Error("TODO")
+  }
+  return id
 }
