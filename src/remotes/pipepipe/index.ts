@@ -10,7 +10,6 @@ import * as zip from "zip-lib"
 import { UserData, type Playlists, type Subscriptions } from ".."
 import { syncSubscriptions } from "../../sync"
 import { getVideoAuthor, type Youtubei } from "../../Youtubei"
-import { compactMap } from "../utils"
 
 export class PipePipe {
   private constructor(
@@ -74,29 +73,24 @@ export class PipePipe {
 
   private async importPlaylists(playlists: Playlists) {
     this.deletePlaylists()
-    await compactMap(
-      playlists, //
-      async ([playlistName, videoIds]) => {
-        const videos = await compactMap(
-          videoIds, //
-          async videoId => {
-            const streamRowId = await this.insertStream(videoId)
-            if (streamRowId !== undefined) {
-              return { id: videoId, streamRowId }
-            }
-          },
-        )
-        let thumbnailUrl = null
-        if (videos[0]) {
-          const firstVideo = await this.youtubei.getVideo(videos[0].id)
-          thumbnailUrl = firstVideo?.thumbnails.best ?? null
+    for (const [playlistName, videoIds] of playlists) {
+      const videos = []
+      for (const videoId of videoIds) {
+        const streamRowId = await this.insertStream(videoId)
+        if (streamRowId !== undefined) {
+          videos.push({ id: videoId, streamRowId })
         }
-        const playlistRowId = this.insertPlaylist(playlistName, thumbnailUrl)
-        for (const [index, video] of videos.entries()) {
-          this.insertPlaylistStreamJoin(playlistRowId, video.streamRowId, index)
-        }
-      },
-    )
+      }
+      let thumbnailUrl = null
+      if (videos[0]) {
+        const firstVideo = await this.youtubei.getVideo(videos[0].id)
+        thumbnailUrl = firstVideo?.thumbnails.best ?? null
+      }
+      const playlistRowId = this.insertPlaylist(playlistName, thumbnailUrl)
+      for (const [index, video] of videos.entries()) {
+        this.insertPlaylistStreamJoin(playlistRowId, video.streamRowId, index)
+      }
+    }
   }
 
   private deletePlaylists() {
