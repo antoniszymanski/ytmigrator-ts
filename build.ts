@@ -5,7 +5,7 @@
 import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { dirname } from "node:path"
-import { choice, map, object, option, optional, passThrough, string, withDefault } from "@optique/core"
+import { choice, object, option, passThrough, string } from "@optique/core"
 import { runProgram } from "@optique/discover"
 import { defineCommand } from "@optique/discover/command"
 import { path } from "@optique/run"
@@ -52,9 +52,9 @@ const commands = [
   defineCommand({
     path: ["build"],
     parser: object({
-      outfile: withDefault(option("--outfile", path({ allowCreate: true })), "./dist/ytmigrator"),
-      target: optional(option("--target", choice(targets))),
-      bytecode: map(option("--no-bytecode"), o => !o),
+      outfile: option("--outfile", path({ allowCreate: true })).withDefault("./dist/ytmigrator"),
+      target: option("--target", choice(targets)).optional(),
+      bytecode: option("--no-bytecode").map(o => !o),
     }),
     async handler(cli) {
       await Bun.build({
@@ -73,7 +73,7 @@ const commands = [
   defineCommand({
     path: ["run"],
     parser: object({
-      cwd: withDefault(option("--cwd", path({ mustExist: true, type: "directory" })), process.cwd()),
+      cwd: option("--cwd", path({ mustExist: true, type: "directory" })).withDefault(process.cwd()),
       args: passThrough({ format: "greedy" }),
     }),
     async handler(cli) {
@@ -100,7 +100,7 @@ const commands = [
   defineCommand({
     path: ["transpile"],
     parser: object({
-      outdir: withDefault(option("--outdir", path({ mustExist: true, type: "directory" })), "./dist"),
+      outdir: option("--outdir", path({ mustExist: true, type: "directory" })).withDefault("./dist"),
       minify: option("--minify"),
     }),
     async handler(cli) {
@@ -114,8 +114,8 @@ const commands = [
   defineCommand({
     path: ["targets"],
     parser: object({
-      format: withDefault(option("--format", choice(["json", "json5", "yaml"])), "json"),
-      space: optional(option("--space", string({ pattern: /^.{0,10}$/ }))),
+      format: option("--format", choice(["json", "json5", "yaml"])).withDefault("json"),
+      space: option("--space", string({ pattern: /^.{0,10}$/ })).optional(),
     }),
     async handler(cli) {
       let stringify
@@ -136,7 +136,7 @@ const commands = [
   defineCommand({
     path: ["man"],
     parser: object({
-      outfile: withDefault(option("--outfile", path({ allowCreate: true })), "./dist/ytmigrator.1"),
+      outfile: option("--outfile", path({ allowCreate: true })).withDefault("./dist/ytmigrator.1"),
     }),
     async handler(cli) {
       await using disposer = new AsyncDisposableStack()

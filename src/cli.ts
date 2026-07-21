@@ -1,22 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Antoni Szymański
 // SPDX-License-Identifier: MPL-2.0
 
-import {
-  choice,
-  command,
-  constant,
-  link,
-  map,
-  message,
-  object,
-  option,
-  optional,
-  or,
-  seq,
-  string,
-  type Usage,
-  withDefault,
-} from "@optique/core"
+import { choice, command, constant, link, message, object, option, or, seq, string, type Usage } from "@optique/core"
 import { defineProgram } from "@optique/core/program"
 import { path } from "@optique/run"
 import { File } from "./remotes/file"
@@ -34,11 +19,11 @@ export const REMOTES = {
         _space = constant(undefined)
       } else {
         _path = path({ allowCreate: true })
-        _space = optional(option("--space", string({ pattern: /^.{0,10}$/ })))
+        _space = option("--space", string({ pattern: /^.{0,10}$/ })).optional()
       }
       return object(`${type} Options`, {
         path: option("--path", _path),
-        format: withDefault(option("--format", choice(["json", "json5", "yaml"])), "json"),
+        format: option("--format", choice(["json", "json5", "yaml"])).withDefault("json"),
         space: _space,
       })
     },
@@ -68,15 +53,10 @@ export const REMOTES = {
   youtube: {
     remote: YouTube,
     options: (type: RemoteType) => {
+      const filePath = path({ extensions: [".json"], mustExist: true, type: "file" })
       return object(`${type} Options`, {
-        credentials: withDefault(
-          option("--credentials", path({ extensions: [".json"], mustExist: true, type: "file" })),
-          "credentials.json",
-        ),
-        token: withDefault(
-          option("--token", path({ extensions: [".json"], mustExist: true, type: "file" })),
-          "token.json",
-        ),
+        credentials: option("--credentials", filePath).withDefault("credentials.json"),
+        token: option("--token", filePath).withDefault("token.json"),
       })
     },
   },
@@ -92,10 +72,7 @@ const dst = or(
     .map(([name, { options }]) =>
       command(
         name,
-        map(
-          seq(constant(name), options("Destination")), //
-          ([remote, options]) => ({ remote, options }),
-        ),
+        seq(constant(name), options("Destination")).map(([remote, options]) => ({ remote, options })),
       ),
     ),
 )
@@ -106,10 +83,7 @@ const parser = or(
     .map(([name, { options }]) =>
       command(
         name,
-        map(
-          seq(constant(name), options("Source"), dst), //
-          ([remote, options, dst]) => ({ remote, options, dst }),
-        ),
+        seq(constant(name), options("Source"), dst).map(([remote, options, dst]) => ({ remote, options, dst })),
         { usageLine },
       ),
     ),
