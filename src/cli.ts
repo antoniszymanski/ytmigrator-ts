@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Antoni Szymański
 // SPDX-License-Identifier: MPL-2.0
 
-import { choice, command, constant, link, message, object, option, or, seq, string, type Usage } from "@optique/core"
+import { choice, command, constant, link, message, object, option, or, seq, string } from "@optique/core"
 import { defineProgram } from "@optique/core/program"
 import { path } from "@optique/run"
 import { File } from "./remotes/file"
