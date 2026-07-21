@@ -6,8 +6,8 @@
       "name": "ytmigrator",
       "dependencies": {
         "@googleapis/youtube": "^33.0.0",
-        "@optique/core": "^1.1.1",
-        "@optique/run": "^1.1.1",
+        "@optique/core": "^1.2.0",
+        "@optique/run": "^1.2.0",
         "open": "^11.0.0",
         "p-memoize": "^8.0.0",
         "p-retry": "^8.0.0",
@@ -16,8 +16,8 @@
         "zip-lib": "^1.4.0",
       },
       "devDependencies": {
-        "@optique/discover": "^1.1.1",
-        "@optique/man": "^1.1.1",
+        "@optique/discover": "^1.2.0",
+        "@optique/man": "^1.2.0",
         "@tsconfig/bun": "^1.0.10",
         "@tsconfig/strictest": "^2.0.8",
         "@ttsc/unplugin": "^0.19.3",
@@ -50,13 +50,13 @@
 
     "@jridgewell/trace-mapping": ["@jridgewell/trace-mapping@0.3.31", "", { "dependencies": { "@jridgewell/resolve-uri": "^3.1.0", "@jridgewell/sourcemap-codec": "^1.4.14" } }, "sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw=="],
 
-    "@optique/core": ["@optique/core@1.1.1", "", {}, "sha512-tbZLdH5wEnh8IRG8KTmWPZCKHLmD4bXigoPdzoSUVi+V46qZTNEaTdqtR7EuEwhbPI0KQjLSYRZCxFTdr9OZkA=="],
+    "@optique/core": ["@optique/core@1.2.0", "", {}, "sha512-h3gHGe8BCo5iVpOt4CcWCmTnPDYdyys0XqOCCc5ZPA2A2S+GmupMkqYNeI57+SildteuGEgBrGP+MlwRlWdzPA=="],
 
-    "@optique/discover": ["@optique/discover@1.1.1", "", { "dependencies": { "@optique/core": "1.1.1", "@optique/run": "1.1.1" } }, "sha512-CI0She5Xwi45m3CD7PIAC9kdAGvbTXacaaBpbx2QdukULnJHwZHb81Qr1Rb5GXQySGAFQar/YapgNWwOmL/ESA=="],
+    "@optique/discover": ["@optique/discover@1.2.0", "", { "dependencies": { "@optique/core": "1.2.0", "@optique/run": "1.2.0" }, "bin": { "optique-discover": "./dist/cli.js" } }, "sha512-vd0UE7BzTJJwIxW6aslNiQx2sBsF/BnT/Dh8yRQGBTUchfS6n8yT6suVEvmPdsQZOSIp8ikiUTV37c4JnwZO9g=="],
 
-    "@optique/man": ["@optique/man@1.1.1", "", { "dependencies": { "@optique/core": "1.1.1", "@optique/run": "1.1.1" }, "bin": { "optique-man": "./dist/cli.js" } }, "sha512-FHlMqqbOz1G7JbXahzpvKv0hWJ7BnXQFVDOp2kZ1UyY37uJaDpFSGpRGi9X6IhY+Dv8KbyhIneUxw9wgt313vA=="],
+    "@optique/man": ["@optique/man@1.2.0", "", { "dependencies": { "@optique/core": "1.2.0", "@optique/run": "1.2.0" }, "bin": { "optique-man": "./dist/cli.js" } }, "sha512-EmeianGRDx74NtpP0n+HTXEtDWDvUrhOUtMNTvQn5cxUOU3oNSvYCfU1yBlGeDJ2KogimKm1bk/tEwqKRox87A=="],
 
-    "@optique/run": ["@optique/run@1.1.1", "", { "dependencies": { "@optique/core": "1.1.1" } }, "sha512-jSZeuiljDEWYkQ67bVDucRknzFVwiSH1j4ho2jFWfcdMMa+WDRSfZA3GZoHA8zKj0Bf6UbJ+FMs/2IReQ0KYNQ=="],
+    "@optique/run": ["@optique/run@1.2.0", "", { "dependencies": { "@optique/core": "1.2.0" } }, "sha512-4H+sJbpKlB0DsFYyJmyTj2atDdF+9j14MbH99zPTK7YGQysWQ4Vo8UR1O91+ssIDUnKkMNoss7zMvaMf6A52Jw=="],
 
     "@oxfmt/binding-android-arm-eabi": ["@oxfmt/binding-android-arm-eabi@0.59.0", "", { "os": "android", "cpu": "arm" }, "sha512-bNTnfbuG7sAwb2PakMNaDukx5kXeW9duXOBeWtTOiLz3fXz3q2DlWguufPZ+c2IHEVrRXHD+M4aUgEWm841LDA=="],
 
