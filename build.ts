@@ -166,7 +166,9 @@ await runProgram({
   metadata: {
     name: "build.ts",
   },
-  help: "command",
+  help: {
+    option: { names: ["-h", "--help"] },
+  },
   completion: "command",
   showChoices: {
     maxItems: Infinity,

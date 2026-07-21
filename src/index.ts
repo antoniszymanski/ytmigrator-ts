@@ -13,7 +13,9 @@ async function main() {
       value: BUILD_VERSION,
       command: true,
     },
-    help: "command",
+    help: {
+      option: { names: ["-h", "--help"] },
+    },
     completion: "command",
     showDefault: true,
     showChoices: true,
