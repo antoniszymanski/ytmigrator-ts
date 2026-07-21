@@ -17,6 +17,8 @@ async function main() {
     completion: "command",
     showDefault: true,
     showChoices: true,
+    showUsage: false,
+    aboveError: "none",
     sectionOrder(a, b) {
       if (a.title === "Source Options" && b.title === "Destination Options") {
         return -1

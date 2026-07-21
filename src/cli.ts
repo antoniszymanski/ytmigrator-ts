@@ -84,26 +84,9 @@ const parser = or(
       command(
         name,
         seq(constant(name), options("Source"), dst).map(([remote, options, dst]) => ({ remote, options, dst })),
-        { usageLine },
       ),
     ),
 )
-
-function usageLine(usage: Usage): Usage {
-  const filtered = usage
-    .filter(term => term.type !== "command" && term.type !== "exclusive")
-    .map(term => {
-      if (Object.hasOwn(term, "terms")) {
-        return { ...term, terms: usageLine(term.terms) }
-      } else {
-        return term
-      }
-    })
-  if (filtered.length !== usage.length) {
-    filtered.push({ type: "ellipsis" })
-  }
-  return filtered
-}
 
 export default defineProgram({
   parser,
