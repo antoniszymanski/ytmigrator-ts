@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MPL-2.0
 
 import { randomUUID } from "node:crypto"
+import { join } from "node:path"
 import typia from "typia"
 import { LiveVideo } from "youtubei"
 import type { Playlists, Subscriptions, UserData } from ".."
@@ -34,7 +35,7 @@ export class FreeTube {
       subscriptions: await compactMap(subscriptions, this.processChannelEntry),
     }
     const text = typia.json.stringify(subscriptionsData).concat("\n")
-    await Bun.write(`${this.dir}/subscriptions.db`, text)
+    await Bun.write(join(this.dir, "subscriptions.db"), text)
   }
 
   private readonly processChannelEntry = async (channelId: string) => {
@@ -56,7 +57,7 @@ export class FreeTube {
       .map(elem => typia.json.stringify(elem))
       .join("\n")
       .concat("\n")
-    await Bun.write(`${this.dir}/playlists.db`, text)
+    await Bun.write(join(this.dir, "playlists.db"), text)
   }
 
   private readonly processPlaylistEntry = async (

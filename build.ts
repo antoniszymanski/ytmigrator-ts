@@ -4,7 +4,7 @@
 
 import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
-import { dirname } from "node:path"
+import { dirname, join, sep } from "node:path"
 import { choice, object, option, passThrough, string } from "@optique/core"
 import { runProgram } from "@optique/discover"
 import { defineCommand } from "@optique/discover/command"
@@ -32,7 +32,7 @@ const targets = (() => {
 })()
 
 const commonConfig: Bun.BuildConfig = {
-  entrypoints: [`${import.meta.dir}/src/index.ts`],
+  entrypoints: [join(import.meta.dir, "src", "index.ts")],
   target: "bun",
   plugins: [ttsc()],
   sourcemap: "linked",
@@ -52,7 +52,7 @@ const commands = [
   defineCommand({
     path: ["build"],
     parser: object({
-      outfile: option("--outfile", path({ allowCreate: true })).withDefault("./dist/ytmigrator"),
+      outfile: option("--outfile", path({ allowCreate: true })).withDefault(join("dist", "ytmigrator")),
       target: option("--target", choice(targets)).optional(),
       bytecode: option("--no-bytecode").map(o => !o),
     }),
@@ -67,7 +67,7 @@ const commands = [
         },
         bytecode: cli.bytecode,
       })
-      await rm(`${dirname(cli.outfile)}/index.js.map`, { force: true })
+      await rm(join(dirname(cli.outfile), "index.js.map"), { force: true })
     },
   }),
   defineCommand({
@@ -79,7 +79,7 @@ const commands = [
     async handler(cli) {
       await using disposer = new AsyncDisposableStack()
       const dir = disposer.adopt(
-        await mkdtemp(`${tmpdir()}/`), //
+        await mkdtemp(`${tmpdir()}${sep}`), //
         async dir => rm(dir, { recursive: true, force: true }),
       )
       await Bun.build({
@@ -141,16 +141,16 @@ const commands = [
     async handler(cli) {
       await using disposer = new AsyncDisposableStack()
       const dir = disposer.adopt(
-        await mkdtemp(`${tmpdir()}/`), //
+        await mkdtemp(`${tmpdir()}${sep}`), //
         async dir => rm(dir, { recursive: true, force: true }),
       )
       await Bun.build({
         ...commonConfig,
-        entrypoints: [`${import.meta.dir}/src/cli.ts`],
+        entrypoints: [join(import.meta.dir, "src", "cli.ts")],
         outdir: dir,
       })
       await Bun.spawn(
-        ["bun", "run", "--bun", "optique-man", `${dir}/cli.js`, "-s", "1", "-o", cli.outfile], //
+        ["bun", "run", "--bun", "optique-man", join(dir, "cli.js"), "-s", "1", "-o", cli.outfile], //
         {
           stdin: "inherit",
           stdout: "inherit",

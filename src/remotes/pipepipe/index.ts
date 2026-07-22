@@ -4,6 +4,7 @@
 import { constants, Database } from "bun:sqlite"
 import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
+import { join, sep } from "node:path"
 import typia from "typia"
 import { LiveVideo } from "youtubei"
 import * as zip from "zip-lib"
@@ -20,7 +21,7 @@ export class PipePipe {
   ) {}
 
   static async create(archivePath: string, youtubei: Youtubei) {
-    const tmpdirPath = await mkdtemp(`${tmpdir()}/`)
+    const tmpdirPath = await mkdtemp(`${tmpdir()}${sep}`)
     await zip.extract(archivePath, tmpdirPath, {
       onEntry(event) {
         if (event.entryName !== "newpipe.db" && event.entryName !== "newpipe.settings") {
@@ -28,7 +29,7 @@ export class PipePipe {
         }
       },
     })
-    const dbPath = `${tmpdirPath}/newpipe.db`
+    const dbPath = join(tmpdirPath, "newpipe.db")
     const db = new Database(dbPath, { strict: true })
     db.run("PRAGMA journal_mode = WAL")
     return new this(archivePath, tmpdirPath, db, youtubei)
