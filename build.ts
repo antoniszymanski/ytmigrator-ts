@@ -83,7 +83,7 @@ const commands = [
         async dir => rm(dir, { recursive: true, force: true }),
       )
       await Bun.build({
-        ...commonConfig, //
+        ...commonConfig,
         outdir: dir,
       })
       await Bun.spawn(
