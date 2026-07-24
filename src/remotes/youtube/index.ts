@@ -85,7 +85,7 @@ export class YouTube {
         source.set(newName, playlist)
       },
       deletePlaylist: async name => {
-        const id = source.get(name)?.id!
+        const { id } = source.get(name)!
         await this.api.deletePlaylist(id)
         source.delete(name)
       },
@@ -100,8 +100,8 @@ export class YouTube {
         playlist.videos.splice(index, 0, { id, itemId: typia.assert<string>(item.id) })
       },
       removeVideo: async (playlistName, index) => {
-        const videos = source.get(playlistName)?.videos!
-        const itemId = videos[index]?.itemId!
+        const { videos } = source.get(playlistName)!
+        const { itemId } = videos[index]!
         await this.api.deletePlaylistItem(itemId)
         videos.splice(index, 1)
       },
