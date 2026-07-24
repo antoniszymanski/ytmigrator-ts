@@ -138,10 +138,9 @@ export class YouTubeApi {
           ]
         }
       }
-      if (typia.is<VideoNotFoundError>(e)) {
-        return undefined
+      if (!typia.is<VideoNotFoundError>(e)) {
+        throw e
       }
-      throw e
     }
   }
 

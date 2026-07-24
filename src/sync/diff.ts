@@ -126,5 +126,4 @@ export function nextArrayChange(source: string[], target: string[]): ArrayChange
   if (index < source.length) {
     return { type: "REMOVE", index, value: source[index]! }
   }
-  return undefined
 }
