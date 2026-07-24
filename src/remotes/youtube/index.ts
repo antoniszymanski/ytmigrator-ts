@@ -68,8 +68,8 @@ export class YouTube {
       createPlaylist: async (name, videoIds) => {
         const playlist = await this.api.insertPlaylist(name)
         const id = typia.assert<string>(playlist.id)
-        const itemRromises = videoIds.map(async (videoId, index) => this.api.insertPlaylistItem(id, videoId, index))
-        const items = await Promise.all(itemRromises)
+        const itemPromises = videoIds.map(async (videoId, index) => this.api.insertPlaylistItem(id, videoId, index))
+        const items = await Promise.all(itemPromises)
         const videos = items
           .filter(item => item !== undefined)
           .map(item => ({
