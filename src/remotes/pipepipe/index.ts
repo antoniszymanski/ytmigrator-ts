@@ -82,10 +82,10 @@ export class PipePipe {
           videos.push({ id: videoId, streamRowId })
         }
       }
-      let thumbnailUrl = null
+      let thumbnailUrl
       if (videos[0]) {
         const firstVideo = await this.youtubei.getVideo(videos[0].id)
-        thumbnailUrl = firstVideo?.thumbnails.best ?? null
+        thumbnailUrl = firstVideo?.thumbnails.best
       }
       const playlistRowId = this.insertPlaylist(playlistName, thumbnailUrl)
       for (const [index, video] of videos.entries()) {
@@ -98,10 +98,10 @@ export class PipePipe {
     this.db.query("DELETE FROM playlists").run()
   }
 
-  private insertPlaylist(name: string, thumbnailUrl: string | null) {
+  private insertPlaylist(name: string, thumbnailUrl?: string) {
     const id = this.db
       .query("INSERT INTO playlists (name, thumbnail_url, display_index) VALUES (?, ?, -1)")
-      .run(name, thumbnailUrl).lastInsertRowid
+      .run(name, thumbnailUrl ?? null).lastInsertRowid
     typia.assertGuard<number>(id)
     return id
   }
