@@ -4,7 +4,7 @@
   "workspaces": {
     "": {
       "dependencies": {
-        "@googleapis/youtube": "^33.0.0",
+        "@googleapis/youtube": "^34.0.0",
         "@optique/core": "^1.2.0",
         "@optique/run": "^1.2.0",
         "open": "^11.0.0",
@@ -33,7 +33,7 @@
     "protobufjs",
   ],
   "packages": {
-    "@googleapis/youtube": ["@googleapis/youtube@33.0.0", "", { "dependencies": { "googleapis-common": "^8.0.0" } }, "sha512-PW3SdoZ8ULzW0We0lgplyZHjuXJtOdRvU5RL6ErNUlcTeSqjoHtk1pWdHKTwk3brPuIiqUB26K7fX84VroDqRg=="],
+    "@googleapis/youtube": ["@googleapis/youtube@34.0.0", "", { "dependencies": { "googleapis-common": "^8.0.0" } }, "sha512-yBiAWYXl4qKNzET4bK5Oejo5a/rXNA0tNp+54kGsCEM/ZW4MHhmwS0U2QWYkcM/8gVOROhnv+fhW2Wi8StXHBg=="],
 
     "@inquirer/external-editor": ["@inquirer/external-editor@1.0.3", "", { "dependencies": { "chardet": "^2.1.1", "iconv-lite": "^0.7.0" }, "peerDependencies": { "@types/node": ">=18" }, "optionalPeers": ["@types/node"] }, "sha512-RWbSrDiYmO4LbejWY7ttpxczuwQyZLBUyygsA9Nsv95hpzUWwnNTVQmAq3xuh7vNwCp07UTmE5i11XAEExx4RA=="],
 
