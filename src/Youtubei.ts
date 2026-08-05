@@ -1,19 +1,19 @@
 // SPDX-FileCopyrightText: 2026 Antoni Szymański
 // SPDX-License-Identifier: MPL-2.0
 
+import { backOff } from "exponential-backoff"
 import { pMemoizeDecorator } from "p-memoize"
-import pRetry from "p-retry"
 import { type BaseVideo, Client, type LiveVideo, type Video } from "youtubei"
 
 export class Youtubei extends Client {
   @pMemoizeDecorator()
   override async getVideo<T extends Video | LiveVideo | undefined>(videoId: string) {
-    return pRetry(async () => super.getVideo<T>(videoId), { retries: 3 })
+    return backOff(async () => super.getVideo<T>(videoId), { numOfAttempts: 3 })
   }
 
   @pMemoizeDecorator()
   override async getChannel(channelId: string) {
-    return pRetry(async () => super.getChannel(channelId), { retries: 3 })
+    return backOff(async () => super.getChannel(channelId), { numOfAttempts: 3 })
   }
 }
 
