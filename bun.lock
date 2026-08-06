@@ -19,7 +19,7 @@
         "@optique/man": "^1.2.0",
         "@tsconfig/bun": "^1.0.10",
         "@tsconfig/strictest": "^2.0.8",
-        "@ttsc/unplugin": "^0.24.0",
+        "@ttsc/unplugin": "^0.25.0",
         "@types/bun": "^1.3.14",
         "oxfmt": "^0.62.0",
         "oxlint": "^1.74.0",
@@ -163,7 +163,7 @@
 
     "@ttsc/linux-x64": ["@ttsc/linux-x64@0.24.0", "", { "os": "linux", "cpu": "x64" }, "sha512-CgM1aQRnRNh6N2LlxASQaZPZYUseKLwvJIryCw83Y6aT+xCdBMcjgjdKcBA5Yd83GH4mfNBHa3pzuyA0M8iTRg=="],
 
-    "@ttsc/unplugin": ["@ttsc/unplugin@0.24.0", "", { "dependencies": { "unplugin": "^2.3.11" }, "peerDependencies": { "ttsc": "^0.24.0" } }, "sha512-hUBfcd4D2AH5do/1jJNpO3LxMqn8cfSMKS/0+Hgsmb8F45WI/snojn1Xcj2jxiPk5KZleffRQASKF7vw/h+fjw=="],
+    "@ttsc/unplugin": ["@ttsc/unplugin@0.25.0", "", { "dependencies": { "unplugin": "^2.3.11" }, "peerDependencies": { "ttsc": "^0.25.0" } }, "sha512-J9R3jWgafTbadeCupbGArAEnnRLxFgA4Y+g1v3IUjTtAX1Saq3wnjYvbYfyB/gzmAoPuQFb2/tMzIwatEsWQpQ=="],
 
     "@ttsc/win32-arm64": ["@ttsc/win32-arm64@0.24.0", "", { "os": "win32", "cpu": "arm64" }, "sha512-ryAIBN0OpD06xiQ15c9+CPwLIjofzmcFNflCmaKuZqBtt5LHcaRv54DU1eu7YQnaIN7WtUxoAXRI0SP2RJJuwQ=="],
 
