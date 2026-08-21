@@ -42,6 +42,11 @@ const commonConfig: Bun.BuildConfig = {
     identifiers: false,
     keepNames: false,
   },
+  // @ts-expect-error
+  metafile: {
+    json: "meta.json",
+    markdown: "meta.md",
+  },
   define: {
     BUILD_NAME: JSON.stringify("ytmigrator"),
     BUILD_VERSION: JSON.stringify((await $`git describe --tags --always`.text()).trim()),
