@@ -19,12 +19,12 @@
         "@optique/man": "^1.2.1",
         "@tsconfig/bun": "^1.0.11",
         "@tsconfig/strictest": "^2.0.8",
-        "@ttsc/unplugin": "^0.28.1",
+        "@ttsc/unplugin": "^0.29.0",
         "@types/bun": "^1.4.0",
         "oxfmt": "^0.66.0",
         "oxlint": "^1.79.0",
         "oxlint-tsgolint": "^7.0.2001",
-        "ttsc": "^0.28.1",
+        "ttsc": "^0.29.0",
         "typescript": "^7.0.2",
       },
     },
@@ -149,21 +149,21 @@
 
     "@tsconfig/strictest": ["@tsconfig/strictest@2.0.8", "", {}, "sha512-XnQ7vNz5HRN0r88GYf1J9JJjqtZPiHt2woGJOo2dYqyHGGcd6OLGqSlBB6p1j9mpzja6Oe5BoPqWmeDx6X9rLw=="],
 
-    "@ttsc/darwin-arm64": ["@ttsc/darwin-arm64@0.28.2", "", { "os": "darwin", "cpu": "arm64" }, "sha512-f/MmZwqjT+APvIQI5yhPYPa2dDwAuhm7wt/Pz3VxAWhxjD1pkXUGD0NFato0bA/QlwqJfCHMBCD/c/OHsxlIvA=="],
+    "@ttsc/darwin-arm64": ["@ttsc/darwin-arm64@0.29.0", "", { "os": "darwin", "cpu": "arm64" }, "sha512-tYGdoLXklqQIaNRFOnS8PWnaVXk18AOqJwHGAj2ZxyOkBb3rF8Hixg8M6FZZ8SPFNcYohKhfYcSOjMHdMw+siA=="],
 
-    "@ttsc/darwin-x64": ["@ttsc/darwin-x64@0.28.2", "", { "os": "darwin", "cpu": "x64" }, "sha512-1nOcNZ9qqg2cvlAATMoXzesUvlp0aIUYIb/8eTaYY/cesW7Yp8XwTIfejKwzk3PsHkhNPcX96zamaqLCmm79XQ=="],
+    "@ttsc/darwin-x64": ["@ttsc/darwin-x64@0.29.0", "", { "os": "darwin", "cpu": "x64" }, "sha512-yYDGFiylDP5WAzCwISikXHZhHV6D8Y9n8bYhrie0U5ED8/M6feUuAwFyp01EQzraOzPQpcE1BWi8RpnlEuPSwg=="],
 
-    "@ttsc/linux-arm": ["@ttsc/linux-arm@0.28.2", "", { "os": "linux", "cpu": "arm" }, "sha512-a/xOU/WTKpLzTtsLZw3+CAF7XMdZ14eDtXvd+oH6zyqWxhciv/NElb68kkW253rKTUUjfmA8wH+UPMbn8Myz2w=="],
+    "@ttsc/linux-arm": ["@ttsc/linux-arm@0.29.0", "", { "os": "linux", "cpu": "arm" }, "sha512-5of87QxJVrLgVidk21j688bATThre6VlcviE7MgLfTnn6hlU8aInFkKZo6NqDwrGfJqve13zqFlwixTXRSMmaw=="],
 
-    "@ttsc/linux-arm64": ["@ttsc/linux-arm64@0.28.2", "", { "os": "linux", "cpu": "arm64" }, "sha512-ne8kwJc5iY2ZpEh1lWbCzOu8Tbmls3FOkmv65zzUpbzubVExkiiLXIDKdnuYyFxVzSl221hlfjRbHuWQ3LuD5A=="],
+    "@ttsc/linux-arm64": ["@ttsc/linux-arm64@0.29.0", "", { "os": "linux", "cpu": "arm64" }, "sha512-voz+FbicOUiQYIronXkrQTA4ffcTN/s+RisGqBOmrtPM8LMoShvxdBCrh4SHu++xrjjp66uy3Uq/sE9O0U9ajw=="],
 
-    "@ttsc/linux-x64": ["@ttsc/linux-x64@0.28.2", "", { "os": "linux", "cpu": "x64" }, "sha512-nRfj6jpaaG/BbBHyyw1SMJC44bIwaayL64MAvmbiWeCiBOhpla/V6d6kqK8eFuVZ4QD1EOUzMTwJxPKQfooqmA=="],
+    "@ttsc/linux-x64": ["@ttsc/linux-x64@0.29.0", "", { "os": "linux", "cpu": "x64" }, "sha512-OJy/rW6VRZNODq+9u3ywdy1qLEhPJws01MCgjyPyyPchY1ryO6m1yTxKF589Wr5Y1qXtrwLZFYzhysCQNMxUmQ=="],
 
-    "@ttsc/unplugin": ["@ttsc/unplugin@0.28.2", "", { "dependencies": { "unplugin": "^2.3.11" }, "peerDependencies": { "ttsc": "^0.28.2" } }, "sha512-/GZ83GXfNJTITcCShnw/jg+FowSLDnm1bj8H8a3B7xHtvljmoU9euq8buaBbCR58sgplJkco3dAaFIp9hQrSbQ=="],
+    "@ttsc/unplugin": ["@ttsc/unplugin@0.29.0", "", { "dependencies": { "unplugin": "^2.3.11" }, "peerDependencies": { "ttsc": "^0.29.0" } }, "sha512-zZREG53Z8u1C0Xfv4LlSpcyCj+SA2O7nGKmOZ6JnG+J/vO8W/uojNyaQxAuSYQaxVwaVOP+UVMrKLGjCGZ/XJg=="],
 
-    "@ttsc/win32-arm64": ["@ttsc/win32-arm64@0.28.2", "", { "os": "win32", "cpu": "arm64" }, "sha512-22vL+WnMkvFkqAgSitFQFPQNBeH1bKpcuqLj5mntn8nqy9rOLbm7uaqtwunVcjVnl7Emq9J4/lplbKbrKxE5oA=="],
+    "@ttsc/win32-arm64": ["@ttsc/win32-arm64@0.29.0", "", { "os": "win32", "cpu": "arm64" }, "sha512-9CAENX11ckdukFCmQpJsxxh8TDeDO355DS9kKTRW8LcVPrs3Zy6JMAdyIY4Dpw8hdpp7Ql3amp007jymS8ZPtA=="],
 
-    "@ttsc/win32-x64": ["@ttsc/win32-x64@0.28.2", "", { "os": "win32", "cpu": "x64" }, "sha512-95CQ9oaMKNeydHKc6AZwUdpXg/73pvXAZfo6xBT57fgciL2Ngv5Wnr5CiNQUh7ZORnAGgvcYu0oxIdETLuhw7w=="],
+    "@ttsc/win32-x64": ["@ttsc/win32-x64@0.29.0", "", { "os": "win32", "cpu": "x64" }, "sha512-8fJY1D2kJF5kIMaR4rqlOcX+LRD/LikxZjRr8n98Aw+WbtilNY/SAamcoaqdcImIZ7qab9pHOt8gBW+Sl2s6Zg=="],
 
     "@types/bun": ["@types/bun@1.4.0", "", { "dependencies": { "bun-types": "1.4.0" } }, "sha512-K+lZULY23vRgK/CfTjFIV+tyifaNdSMlPh9j+6mQ/cLfpOznLyAuzgV/JQysyECpkBQLVMSyvjlr2fBUSA9wFQ=="],
 
@@ -413,7 +413,7 @@
 
     "tr46": ["tr46@0.0.3", "", {}, "sha512-N3WMsuqV66lT30CrXNbEjx4GEwlow3v6rr4mCcv6prnfwhS01rkgyFdjPNBYd9br7LpXV1+Emh01fHnq2Gdgrw=="],
 
-    "ttsc": ["ttsc@0.28.2", "", { "optionalDependencies": { "@ttsc/darwin-arm64": "0.28.2", "@ttsc/darwin-x64": "0.28.2", "@ttsc/linux-arm": "0.28.2", "@ttsc/linux-arm64": "0.28.2", "@ttsc/linux-x64": "0.28.2", "@ttsc/win32-arm64": "0.28.2", "@ttsc/win32-x64": "0.28.2" }, "bin": { "ttsc": "lib/launcher/ttsc.js", "ttscserver": "lib/launcher/ttscserver.js", "ttsx": "lib/launcher/ttsx.js" } }, "sha512-OEy2Gz6tBUXUgg1mzmIX+pPGnbvs9vEHrw9yqiQLu8GkMOz6e7pDQgBV9mJn31P48UgutPaFHufgK4+jqDw8hg=="],
+    "ttsc": ["ttsc@0.29.0", "", { "optionalDependencies": { "@ttsc/darwin-arm64": "0.29.0", "@ttsc/darwin-x64": "0.29.0", "@ttsc/linux-arm": "0.29.0", "@ttsc/linux-arm64": "0.29.0", "@ttsc/linux-x64": "0.29.0", "@ttsc/win32-arm64": "0.29.0", "@ttsc/win32-x64": "0.29.0" }, "bin": { "ttsc": "lib/launcher/ttsc.js", "ttsx": "lib/launcher/ttsx.js", "ttscserver": "lib/launcher/ttscserver.js" } }, "sha512-51yGOGdocdR5CmlQVs/ZTEwftzWSU16t9mcrSDXNoKGffKYE+bRraDTQY960VEBovNZ84mDzJeBDUjIsq6egLQ=="],
 
     "type-fest": ["type-fest@4.41.0", "", {}, "sha512-TeTSQ6H5YHvpqVwBRcnLDCBnDOHWYu7IvGbHT6N8AOymcr9PJGjc1GTtiWZTYg0NCgYwvnYWEkVChQAr9bjfwA=="],
 

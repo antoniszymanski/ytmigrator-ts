@@ -23,12 +23,12 @@
     "@optique/man": "^1.2.1",
     "@tsconfig/bun": "^1.0.11",
     "@tsconfig/strictest": "^2.0.8",
-    "@ttsc/unplugin": "^0.28.1",
+    "@ttsc/unplugin": "^0.29.0",
     "@types/bun": "^1.4.0",
     "oxfmt": "^0.66.0",
     "oxlint": "^1.79.0",
     "oxlint-tsgolint": "^7.0.2001",
-    "ttsc": "^0.28.1",
+    "ttsc": "^0.29.0",
     "typescript": "^7.0.2"
   },
   "trustedDependencies": [
