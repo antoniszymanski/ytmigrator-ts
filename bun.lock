@@ -10,7 +10,7 @@
         "exponential-backoff": "^3.1.3",
         "open": "^11.0.1",
         "p-memoize": "^8.0.0",
-        "typia": "^14.0.0",
+        "typia": "^15.0.0",
         "youtubei": "git://github.com/suspiciouslookingowl/youtubei.git",
         "zip-lib": "^1.4.0",
       },
@@ -205,9 +205,9 @@
 
     "@typescript/typescript-win32-x64": ["@typescript/typescript-win32-x64@7.0.2", "", { "os": "win32", "cpu": "x64" }, "sha512-0BQ3HkAHHlKLSp1qRvf3SUhGpGsDuhB/jgFw75guyqbxJqEaS0Cw/VFO8i2nHglJUzQCRtMMR/IBAKE3ETMC4g=="],
 
-    "@typia/interface": ["@typia/interface@14.0.2", "", {}, "sha512-2P/f5s3js/Yw3x7JJuM6jjhyWON3/asnXGE0p2n6WV4KxTgTWO1Qj/euPN8Y5+mfiYQuq8TcIRBekVyjyFlVWQ=="],
+    "@typia/interface": ["@typia/interface@15.0.0", "", {}, "sha512-iLl1Xtawi+GkdIILJdRyEKi1CZxj/ZRoz5jZ636GLGX83xWy95CZEo/WMJEcjJfdc3UhVK6xbh881d9iuZ+3uA=="],
 
-    "@typia/utils": ["@typia/utils@14.0.2", "", { "dependencies": { "@typia/interface": "^14.0.2" } }, "sha512-lDeWtIv6IF06bhuJJGxu/BkUrasJyxSYgIZ246lFTZxW53BhNnRoc+LaJSmbj/V39409PY3n7dotNVdVytY7fA=="],
+    "@typia/utils": ["@typia/utils@15.0.0", "", { "dependencies": { "@typia/interface": "^15.0.0" } }, "sha512-8gELqfowtStO/3gEc1ABRbFB8rKhabBJ7pNuhQ+7DV9aPKJGDfni6nxkRR0BCV7nuKZ5ev9DGjo8uAgnQ3vq+g=="],
 
     "acorn": ["acorn@8.16.0", "", { "bin": { "acorn": "bin/acorn" } }, "sha512-UVJyE9MttOsBQIDKw1skb9nAwQuR5wuGD3+82K6JgJlm/Y+KI92oNsMNGZCYdDsVtRHSak0pcV5Dno5+4jh9sw=="],
 
@@ -359,7 +359,7 @@
 
     "typescript": ["typescript@7.0.2", "", { "optionalDependencies": { "@typescript/typescript-aix-ppc64": "7.0.2", "@typescript/typescript-darwin-arm64": "7.0.2", "@typescript/typescript-darwin-x64": "7.0.2", "@typescript/typescript-freebsd-arm64": "7.0.2", "@typescript/typescript-freebsd-x64": "7.0.2", "@typescript/typescript-linux-arm": "7.0.2", "@typescript/typescript-linux-arm64": "7.0.2", "@typescript/typescript-linux-loong64": "7.0.2", "@typescript/typescript-linux-mips64el": "7.0.2", "@typescript/typescript-linux-ppc64": "7.0.2", "@typescript/typescript-linux-riscv64": "7.0.2", "@typescript/typescript-linux-s390x": "7.0.2", "@typescript/typescript-linux-x64": "7.0.2", "@typescript/typescript-netbsd-arm64": "7.0.2", "@typescript/typescript-netbsd-x64": "7.0.2", "@typescript/typescript-openbsd-arm64": "7.0.2", "@typescript/typescript-openbsd-x64": "7.0.2", "@typescript/typescript-sunos-x64": "7.0.2", "@typescript/typescript-win32-arm64": "7.0.2", "@typescript/typescript-win32-x64": "7.0.2" }, "bin": { "tsc": "bin/tsc" } }, "sha512-8FYau96o3NKOhbjKi/qNvG/W5jhzxkbdm5sj9AbZ/5T5sWqn3hJgLfGx27sRKZWTvyzCP8dLRBTf5tBTSRVUNA=="],
 
-    "typia": ["typia@14.0.2", "", { "dependencies": { "@typia/interface": "^14.0.2", "@typia/utils": "^14.0.2", "randexp": "^0.5.3" }, "peerDependencies": { "ttsc": ">=0.19.2" }, "optionalPeers": ["ttsc"] }, "sha512-yyqPAX+/0Wg1L4W/eglQjeZvEOQJrV9tH8m6rOJ06qEDXmZDsDidjysOSuuxEBha623hNPgwnU/YpymKn4PRlQ=="],
+    "typia": ["typia@15.0.0", "", { "dependencies": { "@typia/interface": "^15.0.0", "@typia/utils": "^15.0.0", "randexp": "^0.5.3" }, "peerDependencies": { "ttsc": ">=0.19.2" }, "optionalPeers": ["ttsc"] }, "sha512-ZP+58aI7G4CK/NKIfgY4zoMDwtJvtEc9bzb3E3QKnAJs/PeGFJEFbjXLiMq0qYapX6z6BGbDi3NLxetmREhwFg=="],
 
     "undici-types": ["undici-types@8.3.0", "", {}, "sha512-j375ScV60dom+YkPFIfTLcOiPxkN/buHz5GobjLhixFuANaNs3C9l4GmrWqejgXWJ7BbJcFYpTEUkS1Ge8bpZQ=="],
 
