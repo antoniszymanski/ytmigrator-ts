@@ -4,7 +4,7 @@
   "workspaces": {
     "": {
       "dependencies": {
-        "@googleapis/youtube": "^39.0.0",
+        "@googleapis/youtube": "^40.0.0",
         "@optique/core": "^1.2.1",
         "@optique/run": "^1.2.1",
         "exponential-backoff": "^3.1.3",
@@ -33,7 +33,7 @@
     "protobufjs",
   ],
   "packages": {
-    "@googleapis/youtube": ["@googleapis/youtube@39.0.0", "", { "dependencies": { "googleapis-common": "^9.0.0" } }, "sha512-ROGXvKLwOWOS4dSEexWS4ZF061ZGaTmGzkdOiTB6OvpimzmbnVyMioRRi0q+/sZ6C1CwffOb8+WYo5SPiZlTag=="],
+    "@googleapis/youtube": ["@googleapis/youtube@40.0.0", "", { "dependencies": { "googleapis-common": "^9.0.0" } }, "sha512-t6arIbY75ZxbryTCMkKiV2jCcRzHaUk/dS1RjR6HAewkbI3HobnlaSWqaxiQKRCxqswXq02aeBS8/I+dW10qvw=="],
 
     "@jridgewell/gen-mapping": ["@jridgewell/gen-mapping@0.3.13", "", { "dependencies": { "@jridgewell/sourcemap-codec": "^1.5.0", "@jridgewell/trace-mapping": "^0.3.24" } }, "sha512-2kkt/7niJ6MgEPxF0bYdQ6etZaA+fQvDcLKckhy1yIQOzaoKjBBjSj63/aLVjYE3qhRt5dvM+uUyfCg6UKCBbA=="],
 
