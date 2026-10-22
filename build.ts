@@ -105,7 +105,7 @@ const commands = [
   defineCommand({
     path: ["transpile"],
     parser: object({
-      outdir: option("--outdir", path({ mustExist: true, type: "directory" })).withDefault("./dist"),
+      outdir: option("--outdir", path({ mustExist: true, type: "directory" })).withDefault("dist"),
       minify: option("--minify"),
     }),
     async handler(cli) {
@@ -141,7 +141,7 @@ const commands = [
   defineCommand({
     path: ["man"],
     parser: object({
-      outfile: option("--outfile", path({ allowCreate: true })).withDefault("./dist/ytmigrator.1"),
+      outfile: option("--outfile", path({ allowCreate: true })).withDefault(join("dist", "ytmigrator.1")),
     }),
     async handler(cli) {
       await using disposer = new AsyncDisposableStack()
