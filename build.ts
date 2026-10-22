@@ -17,7 +17,7 @@ const targets = (() => {
   const defs: Record<string, ILlmSchema> = {}
   typia.llm.schema<Bun.Build.CompileTarget>(defs)
   const def = defs["bun.Build.CompileTarget"] as { type: "string"; enum: Bun.Build.CompileTarget[] }
-  const unknownTargets = [
+  const unknownTargets = new Set([
     "bun-linux-x64-glibc",
     "bun-linux-arm64-glibc",
     "bun-linux-aarch64-glibc",
@@ -27,8 +27,8 @@ const targets = (() => {
     "bun-linux-arm64-modern-glibc",
     "bun-linux-aarch64-baseline-glibc",
     "bun-linux-aarch64-modern-glibc",
-  ]
-  return def.enum.filter(target => !unknownTargets.includes(target))
+  ])
+  return def.enum.filter(target => !unknownTargets.has(target))
 })()
 
 const commonConfig: Bun.BuildConfig = {
