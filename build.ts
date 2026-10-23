@@ -4,7 +4,7 @@
 
 import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
-import { dirname, join, sep } from "node:path"
+import { join, sep } from "node:path"
 import { choice, object, option, passThrough, string } from "@optique/core"
 import { runProgram } from "@optique/discover"
 import { defineCommand } from "@optique/discover/command"
@@ -35,7 +35,7 @@ const commonConfig: Bun.BuildConfig = {
   entrypoints: [join(import.meta.dir, "src", "index.ts")],
   target: "bun",
   plugins: [ttsc()],
-  sourcemap: "linked",
+  sourcemap: true,
   minify: {
     whitespace: true,
     syntax: true,
@@ -44,7 +44,7 @@ const commonConfig: Bun.BuildConfig = {
   },
   // @ts-expect-error
   metafile: {
-    json: "meta.json",
+    json: "meta.json", // https://esbuild.github.io/analyze
     markdown: "meta.md",
   },
   define: {
@@ -57,22 +57,23 @@ const commands = [
   defineCommand({
     path: ["build"],
     parser: object({
-      outfile: option("--outfile", path({ allowCreate: true })).withDefault(join("dist", "ytmigrator")),
+      outdir: option("--outdir", path({ mustExist: true, type: "directory" })).withDefault("dist"),
       target: option("--target", choice(targets)).optional(),
       bytecode: option("--no-bytecode").map(o => !o),
     }),
     async handler(cli) {
       await Bun.build({
         ...commonConfig,
+        sourcemap: false,
+        outdir: cli.outdir,
         compile: {
           ...(cli.target && { target: cli.target }),
-          outfile: cli.outfile,
+          outfile: "ytmigrator",
           autoloadBunfig: false,
           autoloadDotenv: false,
         },
         bytecode: cli.bytecode,
       })
-      await rm(join(dirname(cli.outfile), "index.js.map"), { force: true })
     },
   }),
   defineCommand({
