@@ -11,7 +11,7 @@
         "open": "^11.0.1",
         "p-memoize": "^9.0.0",
         "typia": "^15.0.0",
-        "youtubei": "git://github.com/suspiciouslookingowl/youtubei.git",
+        "youtubei": "git://github.com/suspiciouslookingowl/youtubei",
         "zip-lib": "^1.4.0",
       },
       "devDependencies": {
