@@ -5,9 +5,9 @@
   "semi": false,
   "useTabs": false,
   "sortImports": {
-    "newlinesBetween": false,
+    "newlinesBetween": false
   },
   "sortPackageJson": {
-    "sortScripts": true,
-  },
+    "sortScripts": true
+  }
 }
